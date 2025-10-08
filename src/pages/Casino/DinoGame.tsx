@@ -56,23 +56,32 @@ const DinoGame = () => {
   useEffect(() => {
     if (!canvasRef.current || appRef.current) return;
 
-    const app = new PIXI.Application({
-      width: 1200,
-      height: 500,
-      backgroundColor: 0x0a0a0a,
-      antialias: true,
-      resolution: window.devicePixelRatio || 1,
-      autoDensity: true,
-    });
+    const initPixi = async () => {
+      const app = new PIXI.Application();
+      
+      await app.init({
+        width: 1200,
+        height: 500,
+        backgroundColor: 0x0a0a0a,
+        antialias: true,
+        resolution: window.devicePixelRatio || 1,
+        autoDensity: true,
+      });
 
-    canvasRef.current.appendChild(app.view as HTMLCanvasElement);
-    appRef.current = app;
+      if (canvasRef.current) {
+        canvasRef.current.appendChild(app.canvas);
+        appRef.current = app;
+        setupGame(app);
+      }
+    };
 
-    setupGame(app);
+    initPixi();
 
     return () => {
-      app.destroy(true);
-      appRef.current = null;
+      if (appRef.current) {
+        appRef.current.destroy(true);
+        appRef.current = null;
+      }
     };
   }, []);
 
