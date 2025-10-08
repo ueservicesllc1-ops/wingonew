@@ -26,6 +26,8 @@ import ResponsibleGaming from '@/pages/ResponsibleGaming';
 import About from '@/pages/About';
 import Careers from '@/pages/Careers';
 import Promotions from '@/pages/Promotions';
+import CasinoHome from '@/pages/Casino/CasinoHome';
+import DinoGame from '@/pages/Casino/DinoGame';
 
 // Admin Pages
 import AdminDashboard from '@/pages/Admin/Dashboard';
@@ -133,6 +135,8 @@ function App() {
             <Route path="contact" element={<Contact />} />
             <Route path="careers" element={<Careers />} />
             <Route path="promotions" element={<Promotions />} />
+            <Route path="casino" element={<CasinoHome />} />
+            <Route path="casino/dino" element={<DinoGame />} />
           </Route>
 
           {/* Rutas de Administración */}
