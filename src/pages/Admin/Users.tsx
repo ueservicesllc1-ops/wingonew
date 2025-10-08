@@ -4,8 +4,6 @@ import { FiSearch, FiFilter, FiEdit2, FiTrash2, FiCheckCircle, FiXCircle, FiArro
 import { Link } from 'react-router-dom';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '@/config/firebase';
-import { adminService } from '@/services/adminService';
-import toast from 'react-hot-toast';
 import UserBetsModal from '@/components/Admin/UserBetsModal';
 import UserTransactionsModal from '@/components/Admin/UserTransactionsModal';
 
@@ -15,7 +13,6 @@ import UserTransactionsModal from '@/components/Admin/UserTransactionsModal';
 const AdminUsers = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<{ id: string; name: string } | null>(null);
   const [showBetsModal, setShowBetsModal] = useState(false);
   const [showTransactionsModal, setShowTransactionsModal] = useState(false);
@@ -70,7 +67,6 @@ const AdminUsers = () => {
   }, []);
 
   const loadUsers = async () => {
-    setLoading(true);
     try {
       const usersRef = collection(db, 'users');
       const q = query(usersRef, orderBy('createdAt', 'desc'));
@@ -89,8 +85,6 @@ const AdminUsers = () => {
       }
     } catch (error) {
       console.error('Error al cargar usuarios:', error);
-    } finally {
-      setLoading(false);
     }
   };
 

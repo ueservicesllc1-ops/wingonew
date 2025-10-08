@@ -21,7 +21,9 @@ export const betService = {
         eventId: betSlip.eventId,
         event: {
           ...betSlip.event,
-          startTime: betSlip.event.startTime.toISOString(),
+          startTime: typeof betSlip.event.startTime === 'string' 
+            ? betSlip.event.startTime 
+            : betSlip.event.startTime.toISOString(),
         },
         betType: betSlip.betType,
         amount: betSlip.amount,

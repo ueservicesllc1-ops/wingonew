@@ -122,7 +122,7 @@ const BetSlipModern = () => {
                   </p>
                 </div>
                 <button
-                  onClick={() => removeBet(bet.id)}
+                  onClick={() => removeBet(bet.id || bet.eventId)}
                   className="w-8 h-8 rounded-lg bg-dark-800 flex items-center justify-center hover:bg-red-500/20 hover:text-red-500 transition-all"
                 >
                   <FiX className="w-5 h-5" />
@@ -142,13 +142,13 @@ const BetSlipModern = () => {
                   <input
                     type="number"
                     value={bet.stake || ''}
-                    onChange={(e) => updateBetStake(bet.id, parseFloat(e.target.value) || 0)}
+                    onChange={(e) => updateBetStake(bet.id || bet.eventId, parseFloat(e.target.value) || 0)}
                     placeholder="0.00"
                     className="w-full bg-dark-800 border border-dark-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-500"
                   />
-                  {bet.stake > 0 && (
+                  {(bet.stake || 0) > 0 && (
                     <div className="mt-2 text-xs text-gray-400">
-                      Ganancia potencial: <span className="text-green-400 font-bold">${(bet.stake * bet.odds).toFixed(2)}</span>
+                      Ganancia potencial: <span className="text-green-400 font-bold">${((bet.stake || 0) * bet.odds).toFixed(2)}</span>
                     </div>
                   )}
                 </div>
@@ -169,7 +169,7 @@ const BetSlipModern = () => {
               value={bets[0]?.stake || ''}
               onChange={(e) => {
                 const value = parseFloat(e.target.value) || 0;
-                bets.forEach(bet => updateBetStake(bet.id, value));
+                bets.forEach(bet => updateBetStake(bet.id || bet.eventId, value));
               }}
               placeholder="0.00"
               className="w-full bg-dark-800 border border-dark-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-500"

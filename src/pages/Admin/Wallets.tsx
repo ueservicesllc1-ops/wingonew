@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiSearch, FiDollarSign, FiX, FiUser, FiMail, FiCreditCard, FiArrowLeft } from 'react-icons/fi';
+import { FiSearch, FiX, FiUser, FiMail, FiCreditCard, FiArrowLeft } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/config/firebase';

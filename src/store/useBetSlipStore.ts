@@ -6,6 +6,7 @@ interface BetSlipState {
   addBet: (bet: BetSlip) => void;
   removeBet: (eventId: string) => void;
   updateAmount: (eventId: string, amount: number) => void;
+  updateBetStake: (eventId: string, stake: number) => void;
   clearBets: () => void;
   getTotalOdds: () => number;
   getTotalAmount: () => number;
@@ -34,6 +35,12 @@ export const useBetSlipStore = create<BetSlipState>((set, get) => ({
   updateAmount: (eventId, amount) => set((state) => ({
     bets: state.bets.map(b => 
       b.eventId === eventId ? { ...b, amount } : b
+    )
+  })),
+
+  updateBetStake: (eventId, stake) => set((state) => ({
+    bets: state.bets.map(b => 
+      b.eventId === eventId ? { ...b, stake, amount: stake } : b
     )
   })),
   

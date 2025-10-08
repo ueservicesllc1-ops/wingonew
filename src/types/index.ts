@@ -2,6 +2,9 @@ export interface User {
   id: string;
   email: string;
   displayName: string;
+  name?: string;
+  shortId?: string;
+  cedula?: string;
   balance: number;
   createdAt: Date;
 }
@@ -12,8 +15,9 @@ export interface SportEvent {
   league: string;
   homeTeam: string;
   awayTeam: string;
-  startTime: Date;
-  status: 'upcoming' | 'live' | 'finished';
+  startTime: Date | string;
+  status: 'upcoming' | 'live' | 'finished' | 'completed' | 'scheduled';
+  date?: string;
   odds: {
     home: number;
     draw?: number;
@@ -35,11 +39,15 @@ export interface Bet {
 }
 
 export interface BetSlip {
+  id?: string;
   eventId: string;
+  eventName?: string;
+  selection?: string;
   event: SportEvent;
   betType: 'home' | 'draw' | 'away';
   odds: number;
   amount: number;
+  stake?: number;
 }
 
 export interface Transaction {

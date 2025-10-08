@@ -110,25 +110,20 @@ const TransactionsModal = ({ isOpen, onClose }: TransactionsModalProps) => {
     return transaction.status === filter;
   });
 
-  const statusColors = {
-    completed: 'bg-green-800',
-    pending: 'bg-gray-600',
-    failed: 'bg-red-800',
-  };
 
-  const statusIcons = {
+  const statusIcons: Record<string, any> = {
     completed: FiCheck,
     pending: FiClock,
     failed: FiXIcon,
   };
 
-  const statusLabels = {
+  const statusLabels: Record<string, string> = {
     completed: 'Completada',
     pending: 'Pendiente',
     failed: 'Fallida',
   };
 
-  const typeIcons = {
+  const typeIcons: Record<string, any> = {
     deposit: FiArrowDown,
     withdrawal: FiArrowUp,
     bet_win: FiCheck,
@@ -136,7 +131,7 @@ const TransactionsModal = ({ isOpen, onClose }: TransactionsModalProps) => {
     bonus: FiCreditCard,
   };
 
-  const typeLabels = {
+  const typeLabels: Record<string, string> = {
     deposit: 'Depósito',
     withdrawal: 'Retiro',
     bet_win: 'Ganancia',
@@ -144,7 +139,7 @@ const TransactionsModal = ({ isOpen, onClose }: TransactionsModalProps) => {
     bonus: 'Bono',
   };
 
-  const typeColors = {
+  const typeColors: Record<string, string> = {
     deposit: 'text-green-400',
     withdrawal: 'text-blue-400',
     bet_win: 'text-green-400',

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiMenu, FiX, FiUser, FiSearch, FiChevronDown, FiSettings } from 'react-icons/fi';
 import { IoFootballOutline, IoBasketballOutline, IoTennisballOutline } from 'react-icons/io5';
@@ -22,7 +22,6 @@ const HeaderModern = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   
   const { user } = useAuthStore();
-  const navigate = useNavigate();
 
   // Detectar scroll para cambiar estilo del header
   useEffect(() => {
@@ -103,7 +102,7 @@ const HeaderModern = () => {
                       exit={{ opacity: 0, y: 10 }}
                       className="absolute top-full left-0 mt-2 w-64 bg-black/90 border border-yellow-500/30 rounded-xl shadow-2xl overflow-hidden backdrop-blur-lg"
                     >
-                      {deportes.map((deporte, index) => (
+                      {deportes.map((deporte) => (
                         <Link
                           key={deporte.name}
                           to={deporte.path}

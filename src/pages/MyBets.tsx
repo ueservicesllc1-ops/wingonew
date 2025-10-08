@@ -1,22 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
-import { betService } from '@/services/betService';
 import { Bet } from '@/types';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { TrendingUp, Clock, CheckCircle, XCircle, Calendar, Trophy, DollarSign } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 
 // Datos de ejemplo para mostrar
 const exampleBets: Bet[] = [
   {
     id: '1',
     userId: 'user1',
+    eventId: 'evt1',
     event: {
       id: 'evt1',
       homeTeam: 'Barcelona',
       awayTeam: 'Real Madrid',
       league: 'La Liga',
-      date: new Date('2024-01-15'),
+      date: '2024-01-15',
+      startTime: '2024-01-15',
+      sport: 'futbol' as const,
+      odds: { home: 2.45, away: 1.8 },
       status: 'completed'
     },
     betType: 'home',
@@ -25,17 +26,20 @@ const exampleBets: Bet[] = [
     potentialWin: 122.50,
     status: 'won',
     createdAt: new Date('2024-01-14'),
-    updatedAt: new Date('2024-01-15')
   },
   {
     id: '2',
     userId: 'user1',
+    eventId: 'evt2',
     event: {
       id: 'evt2',
       homeTeam: 'Manchester City',
       awayTeam: 'Liverpool',
       league: 'Premier League',
-      date: new Date('2024-01-16'),
+      date: '2024-01-16',
+      startTime: '2024-01-16',
+      sport: 'futbol' as const,
+      odds: { home: 1.9, draw: 3.2, away: 2.1 },
       status: 'live'
     },
     betType: 'draw',
@@ -44,17 +48,20 @@ const exampleBets: Bet[] = [
     potentialWin: 80.00,
     status: 'pending',
     createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-15')
   },
   {
     id: '3',
     userId: 'user1',
+    eventId: 'evt3',
     event: {
       id: 'evt3',
       homeTeam: 'PSG',
       awayTeam: 'Bayern Munich',
       league: 'Champions League',
-      date: new Date('2024-01-12'),
+      date: '2024-01-12',
+      startTime: '2024-01-12',
+      sport: 'futbol' as const,
+      odds: { home: 2.1, away: 1.85 },
       status: 'completed'
     },
     betType: 'away',
@@ -63,17 +70,20 @@ const exampleBets: Bet[] = [
     potentialWin: 185.00,
     status: 'lost',
     createdAt: new Date('2024-01-11'),
-    updatedAt: new Date('2024-01-12')
   },
   {
     id: '4',
     userId: 'user1',
+    eventId: 'evt4',
     event: {
       id: 'evt4',
       homeTeam: 'Chelsea',
       awayTeam: 'Arsenal',
       league: 'Premier League',
-      date: new Date('2024-01-18'),
+      date: '2024-01-18',
+      startTime: '2024-01-18',
+      sport: 'futbol' as const,
+      odds: { home: 2.1, away: 1.9 },
       status: 'scheduled'
     },
     betType: 'home',
@@ -82,17 +92,20 @@ const exampleBets: Bet[] = [
     potentialWin: 157.50,
     status: 'pending',
     createdAt: new Date('2024-01-16'),
-    updatedAt: new Date('2024-01-16')
   },
   {
     id: '5',
     userId: 'user1',
+    eventId: 'evt5',
     event: {
       id: 'evt5',
       homeTeam: 'Inter Milan',
       awayTeam: 'Juventus',
       league: 'Serie A',
-      date: new Date('2024-01-10'),
+      date: '2024-01-10',
+      startTime: '2024-01-10',
+      sport: 'futbol' as const,
+      odds: { home: 1.9, draw: 2.85, away: 2.2 },
       status: 'completed'
     },
     betType: 'draw',
@@ -101,17 +114,20 @@ const exampleBets: Bet[] = [
     potentialWin: 114.00,
     status: 'won',
     createdAt: new Date('2024-01-09'),
-    updatedAt: new Date('2024-01-10')
   },
   {
     id: '6',
     userId: 'user1',
+    eventId: 'evt6',
     event: {
       id: 'evt6',
       homeTeam: 'Atletico Madrid',
       awayTeam: 'Valencia',
       league: 'La Liga',
-      date: new Date('2024-01-20'),
+      date: '2024-01-20',
+      startTime: '2024-01-20',
+      sport: 'futbol' as const,
+      odds: { home: 1.6, away: 4.5 },
       status: 'scheduled'
     },
     betType: 'away',
@@ -120,7 +136,6 @@ const exampleBets: Bet[] = [
     potentialWin: 90.00,
     status: 'pending',
     createdAt: new Date('2024-01-17'),
-    updatedAt: new Date('2024-01-17')
   }
 ];
 
@@ -159,17 +174,7 @@ const MyBets = () => {
   const lostBets = bets.filter(b => b.status === 'lost').length;
   const pendingBets = bets.filter(b => b.status === 'pending').length;
 
-  const statusColors = {
-    pending: 'bg-blue-500',
-    won: 'bg-green-500',
-    lost: 'bg-red-500',
-  };
 
-  const statusIcons = {
-    pending: Clock,
-    won: CheckCircle,
-    lost: XCircle,
-  };
 
   const statusLabels = {
     pending: 'Pendiente',
@@ -299,7 +304,6 @@ const MyBets = () => {
               </thead>
               <tbody>
                 {filteredBets.map((bet, index) => {
-                  const StatusIcon = statusIcons[bet.status];
                   const isEven = index % 2 === 0;
                   
                   return (

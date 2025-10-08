@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { FiStar, FiClock } from 'react-icons/fi';
+import { FiClock } from 'react-icons/fi';
 import { useBetSlipStore } from '@/store/useBetSlipStore';
 import toast from 'react-hot-toast';
 
@@ -48,7 +48,10 @@ const MatchCard = ({
       eventId: id,
       eventName: `${homeTeam} vs ${awayTeam}`,
       selection: team,
+      event: {} as any,
+      betType: 'home' as any,
       odds: odds,
+      amount: 0,
       stake: 0,
     });
 

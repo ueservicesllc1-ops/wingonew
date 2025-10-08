@@ -106,7 +106,9 @@ const BetSlip = () => {
                       {bet.event.homeTeam} vs {bet.event.awayTeam}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
-                      {format(bet.event.startTime, "d 'de' MMMM, HH:mm", { locale: es })}
+                      {typeof bet.event.startTime === 'string' 
+                        ? bet.event.startTime 
+                        : format(bet.event.startTime, "d 'de' MMMM, HH:mm", { locale: es })}
                     </p>
                   </div>
                   <button

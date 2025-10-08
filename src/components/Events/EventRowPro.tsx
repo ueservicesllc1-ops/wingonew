@@ -54,7 +54,9 @@ const EventRowPro = ({ event }: EventRowProProps) => {
             {event.status === 'upcoming' && (
               <div className="flex items-center space-x-1 text-betting-text-muted text-xs">
                 <Clock className="w-3 h-3" />
-                <span>{format(event.startTime, "HH:mm", { locale: es })}</span>
+                <span>{typeof event.startTime === 'string' 
+                  ? event.startTime 
+                  : format(event.startTime, "HH:mm", { locale: es })}</span>
               </div>
             )}
             

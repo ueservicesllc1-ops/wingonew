@@ -12,7 +12,6 @@ import toast from 'react-hot-toast';
 const AdminPromotions = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingPromo, setEditingPromo] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [promotions, setPromotions] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
@@ -34,7 +33,6 @@ const AdminPromotions = () => {
   }, []);
 
   const loadPromotions = async () => {
-    setLoading(true);
     try {
       const promotionsRef = collection(db, 'promotions');
       const q = query(promotionsRef, orderBy('createdAt', 'desc'));
@@ -48,8 +46,6 @@ const AdminPromotions = () => {
       setPromotions(promotionsData);
     } catch (error) {
       console.error('Error al cargar promociones:', error);
-    } finally {
-      setLoading(false);
     }
   };
 

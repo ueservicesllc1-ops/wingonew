@@ -17,12 +17,10 @@ import {
   MdSportsRugby,
   MdSportsMotorsports,
   MdSportsEsports,
-  MdSportsGolf,
-  MdSportsTennis,
-  MdSportsKabaddi
+  MdSportsGolf
 } from 'react-icons/md';
 import { GiBoxingGlove, GiCycling, GiDart, GiPingPongBat } from 'react-icons/gi';
-import { FiChevronDown, FiChevronRight, FiX } from 'react-icons/fi';
+import { FiChevronDown, FiX } from 'react-icons/fi';
 
 /**
  * Sidebar izquierda con listado completo de deportes

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiUpload, FiEdit2, FiTrash2, FiEye, FiArrowLeft, FiX, FiImage, FiCheck } from 'react-icons/fi';
+import { FiUpload, FiEdit2, FiTrash2, FiEye, FiArrowLeft, FiX } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { bannersService, Banner } from '@/services/bannersService';

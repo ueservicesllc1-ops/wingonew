@@ -32,16 +32,20 @@ const EventCard = ({ event }: EventCardProps) => {
     return bets.some(bet => bet.eventId === event.id && bet.betType === betType);
   };
 
-  const statusColors = {
+  const statusColors: Record<string, string> = {
     upcoming: 'bg-blue-500',
     live: 'bg-red-500 animate-pulse',
     finished: 'bg-gray-500',
+    completed: 'bg-gray-500',
+    scheduled: 'bg-blue-500',
   };
 
-  const statusLabels = {
+  const statusLabels: Record<string, string> = {
     upcoming: 'Próximo',
     live: 'En Vivo',
     finished: 'Finalizado',
+    completed: 'Completado',
+    scheduled: 'Programado',
   };
 
   return (
@@ -53,7 +57,9 @@ const EventCard = ({ event }: EventCardProps) => {
           <div className="flex items-center space-x-2 mt-1">
             <Clock className="w-4 h-4 text-gray-400" />
             <span className="text-sm text-gray-300">
-              {format(event.startTime, "d 'de' MMMM, HH:mm", { locale: es })}
+              {typeof event.startTime === 'string' 
+                ? event.startTime 
+                : format(event.startTime, "d 'de' MMMM, HH:mm", { locale: es })}
             </span>
           </div>
         </div>

@@ -11,7 +11,7 @@ import {
   FiMail
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
-import { collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 
 /**
