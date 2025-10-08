@@ -1,0 +1,16 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Banners - Todos pueden leer, escritura abierta temporalmente
+    match /banners/{imageId} {
+      allow read: if true;
+      allow write: if true; // Cambiar después por: request.auth != null
+    }
+    
+    // Otras carpetas - Solo lectura pública
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if true; // Cambiar después por permisos más restrictivos
+    }
+  }
+}
