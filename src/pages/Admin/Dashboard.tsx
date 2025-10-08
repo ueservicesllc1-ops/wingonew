@@ -48,7 +48,7 @@ const AdminDashboard = () => {
       title: 'Gestión de Usuarios',
       description: 'Administrar usuarios, permisos y verificaciones',
       icon: FiUsers,
-      color: 'from-blue-500 to-blue-700',
+      color: 'from-yellow-600 to-yellow-700',
       path: '/admin/users',
       stats: `${stats.totalUsers} usuarios`
     },
@@ -68,7 +68,7 @@ const AdminDashboard = () => {
       title: 'Billeteras',
       description: 'Buscar usuarios y administrar sus fondos',
       icon: FiDollarSign,
-      color: 'from-green-500 to-green-700',
+      color: 'from-yellow-500 to-orange-600',
       path: '/admin/wallets',
       stats: 'Gestión de fondos'
     },
@@ -77,7 +77,7 @@ const AdminDashboard = () => {
       title: 'Banners del Hero',
       description: 'Subir y gestionar banners del slider principal',
       icon: FiImage,
-      color: 'from-purple-500 to-purple-700',
+      color: 'from-gray-700 to-gray-800',
       path: '/admin/banners',
       stats: `${stats.activeBanners} activos`
     },
@@ -86,7 +86,7 @@ const AdminDashboard = () => {
       title: 'Promociones',
       description: 'Crear y editar promociones y bonos',
       icon: FiGift,
-      color: 'from-orange-500 to-orange-700',
+      color: 'from-yellow-600 to-orange-600',
       path: '/admin/promotions',
       stats: `${stats.activePromotions} activas`
     },
@@ -95,7 +95,7 @@ const AdminDashboard = () => {
       title: 'Configuración',
       description: 'Ajustes generales de la plataforma',
       icon: FiSettings,
-      color: 'from-gray-500 to-gray-700',
+      color: 'from-gray-600 to-gray-700',
       path: '/admin/settings',
       stats: 'Sistema'
     }
@@ -106,28 +106,28 @@ const AdminDashboard = () => {
       label: 'Usuarios Totales',
       value: stats.totalUsers.toLocaleString(),
       icon: FiUsers,
-      color: 'text-blue-400',
+      color: 'text-yellow-400',
       change: '+12%'
     },
     {
       label: 'Apuestas Hoy',
       value: stats.totalBets.toLocaleString(),
       icon: FiBarChart2,
-      color: 'text-green-400',
+      color: 'text-yellow-500',
       change: '+8%'
     },
     {
       label: 'Ingresos',
       value: `$${stats.revenue.toLocaleString()}`,
       icon: FiDollarSign,
-      color: 'text-secondary-400',
+      color: 'text-yellow-600',
       change: '+15%'
     },
     {
       label: 'Usuarios Activos',
       value: stats.activeUsers.toLocaleString(),
       icon: FiTrendingUp,
-      color: 'text-purple-400',
+      color: 'text-yellow-300',
       change: '+5%'
     }
   ];
@@ -159,7 +159,7 @@ const AdminDashboard = () => {
             >
               <div className="flex items-center justify-between mb-4">
                 <stat.icon className={`w-8 h-8 ${stat.color}`} />
-                <span className="text-green-400 text-sm font-semibold">{stat.change}</span>
+                <span className="text-yellow-400 text-sm font-semibold">{stat.change}</span>
               </div>
               <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
               <div className="text-sm text-gray-400">{stat.label}</div>
@@ -250,9 +250,9 @@ const AdminDashboard = () => {
               <div key={index} className="flex items-center justify-between p-4 bg-dark-900/50 rounded-lg hover:bg-dark-700 transition-colors">
                 <div className="flex items-center space-x-4">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    activity.type === 'user' ? 'bg-blue-500/20 text-blue-400' :
-                    activity.type === 'banner' ? 'bg-purple-500/20 text-purple-400' :
-                    'bg-orange-500/20 text-orange-400'
+                    activity.type === 'user' ? 'bg-yellow-500/20 text-yellow-400' :
+                    activity.type === 'banner' ? 'bg-gray-700/50 text-gray-300' :
+                    'bg-yellow-600/20 text-yellow-500'
                   }`}>
                     {activity.type === 'user' && <FiUsers className="w-5 h-5" />}
                     {activity.type === 'banner' && <FiImage className="w-5 h-5" />}
