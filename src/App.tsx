@@ -29,6 +29,7 @@ import Promotions from '@/pages/Promotions';
 import CasinoHome from '@/pages/Casino/CasinoHome';
 import DinoGame from '@/pages/Casino/DinoGame';
 import PlinkoGame from '@/pages/Casino/PlinkoGame';
+import DiceGame from '@/pages/Casino/Dice3D/DiceGame';
 
 // Admin Pages
 import AdminDashboard from '@/pages/Admin/Dashboard';
@@ -140,6 +141,7 @@ function App() {
             <Route path="casino" element={<CasinoHome />} />
             <Route path="casino/dino" element={<DinoGame />} />
             <Route path="casino/plinko" element={<PlinkoGame />} />
+            <Route path="casino/dice" element={<DiceGame />} />
           </Route>
 
           {/* Rutas de Administración */}

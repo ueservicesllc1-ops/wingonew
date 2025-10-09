@@ -35,12 +35,13 @@ const CasinoHome = () => {
     },
     {
       id: 'dice',
-      name: 'Dice',
-      description: 'Apuesta alto o bajo en los dados',
-      icon: '🎲',
+      name: 'La Pinta',
+      description: 'Juego ecuatoriano de dados - Par/Impar, Mayor/Menor y más',
+      icon: '🎲🎲',
       path: '/casino/dice',
-      color: 'from-blue-600 to-blue-700',
-      comingSoon: true
+      color: 'from-purple-600 to-purple-700',
+      comingSoon: false,
+      popular: true
     },
     {
       id: 'mines',
