@@ -46,5 +46,11 @@ service cloud.firestore {
       allow update: if true; // Solo admins pueden actualizar (marcar como leído)
       allow delete: if true; // Solo admins pueden eliminar
     }
+    
+    // Settings collection (configuraciones globales)
+    match /settings/{settingId} {
+      allow read: if true; // Todos pueden leer las configuraciones
+      allow write: if true; // Temporalmente permitir a todos (cambiar después por auth admin)
+    }
   }
 }

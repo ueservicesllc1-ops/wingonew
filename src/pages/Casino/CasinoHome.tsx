@@ -1,16 +1,32 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { FiTrendingUp, FiZap, FiDollarSign, FiStar } from 'react-icons/fi';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/config/firebase';
+
+interface Game {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  path: string;
+  color: string;
+  popular?: boolean;
+  comingSoon?: boolean;
+  coverImage?: string;
+  active?: boolean;
+}
 
 /**
  * Página principal del Casino
  * Lista de juegos disponibles
  */
 const CasinoHome = () => {
-  const games = [
+  const [games, setGames] = useState<Game[]>([
     {
       id: 'dino',
-      name: 'Dino Crash',
+      name: 'Speed Run',
       description: 'Multiplica tus ganancias antes del crash',
       icon: '🦖',
       path: '/casino/dino',
@@ -39,10 +55,11 @@ const CasinoHome = () => {
       id: 'plinko',
       name: 'Plinko',
       description: 'Deja caer la bola y gana',
-      icon: '🎰',
+      icon: '🎯',
       path: '/casino/plinko',
       color: 'from-orange-600 to-orange-700',
-      comingSoon: true
+      comingSoon: false,
+      popular: false
     },
     {
       id: 'wheel',
@@ -62,7 +79,42 @@ const CasinoHome = () => {
       color: 'from-red-600 to-red-700',
       comingSoon: true
     }
-  ];
+  ]);
+
+  const [loading, setLoading] = useState(true);
+
+  // Cargar configuración de juegos desde Firestore
+  useEffect(() => {
+    const loadGames = async () => {
+      try {
+        const gamesDoc = await getDoc(doc(db, 'settings', 'casino-games'));
+        if (gamesDoc.exists()) {
+          const firestoreGames = gamesDoc.data().games || [];
+          
+          // Actualizar los juegos con la información de Firestore
+          setGames(prevGames => 
+            prevGames.map(game => {
+              const firestoreGame = firestoreGames.find((g: any) => g.id === game.id);
+              if (firestoreGame) {
+                return {
+                  ...game,
+                  coverImage: firestoreGame.coverImage || '',
+                  active: firestoreGame.active !== undefined ? firestoreGame.active : true
+                };
+              }
+              return game;
+            })
+          );
+        }
+      } catch (error) {
+        console.error('Error al cargar juegos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadGames();
+  }, []);
 
   const stats = [
     {
@@ -128,7 +180,13 @@ const CasinoHome = () => {
         {/* Juegos */}
         <div>
           <h2 className="text-3xl font-bold text-white mb-6">Juegos Disponibles</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-yellow-600 border-t-transparent"></div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {games.map((game, index) => (
               <motion.div
                 key={game.id}
@@ -148,21 +206,36 @@ const CasinoHome = () => {
                   </div>
                 ) : (
                   <Link to={game.path}>
-                    <div className={`relative bg-gradient-to-br ${game.color} rounded-2xl p-8 text-center overflow-hidden group`}>
+                    <div className="relative rounded-2xl overflow-hidden group h-80">
+                      {/* Imagen de Cover o Gradiente */}
+                      {game.coverImage ? (
+                        <div 
+                          className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
+                          style={{ backgroundImage: `url(${game.coverImage})` }}
+                        />
+                      ) : (
+                        <div className={`absolute inset-0 bg-gradient-to-br ${game.color}`} />
+                      )}
+                      
+                      {/* Overlay oscuro */}
+                      <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-300" />
+                      
+                      {/* Badge Popular */}
                       {game.popular && (
-                        <div className="absolute top-4 right-4 bg-yellow-500 text-black px-3 py-1 rounded-full text-xs font-bold flex items-center space-x-1">
+                        <div className="absolute top-4 right-4 bg-yellow-500 text-black px-3 py-1 rounded-full text-xs font-bold flex items-center space-x-1 z-20">
                           <FiStar className="w-3 h-3" />
                           <span>POPULAR</span>
                         </div>
                       )}
                       
-                      <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-300" />
-                      
-                      <div className="relative z-10">
-                        <div className="text-6xl mb-4">{game.icon}</div>
-                        <h3 className="text-2xl font-bold text-white mb-2">{game.name}</h3>
-                        <p className="text-white/80 mb-4">{game.description}</p>
-                        <div className="inline-flex items-center space-x-2 bg-white/20 px-4 py-2 rounded-lg text-white font-semibold">
+                      {/* Contenido */}
+                      <div className="relative z-10 h-full flex flex-col items-center justify-center p-8 text-center">
+                        {!game.coverImage && (
+                          <div className="text-6xl mb-4">{game.icon}</div>
+                        )}
+                        <h3 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">{game.name}</h3>
+                        <p className="text-white/90 mb-4 drop-shadow-lg">{game.description}</p>
+                        <div className="inline-flex items-center space-x-2 bg-yellow-500 hover:bg-yellow-400 px-6 py-3 rounded-lg text-black font-bold transition-all shadow-lg">
                           <span>Jugar Ahora</span>
                           <FiZap className="w-4 h-4" />
                         </div>
@@ -172,7 +245,8 @@ const CasinoHome = () => {
                 )}
               </motion.div>
             ))}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Información */}

@@ -64,6 +64,15 @@ const AdminDashboard = () => {
       notificationCount: unreadMessages
     },
     {
+      id: 'games',
+      title: 'Juegos de Casino',
+      description: 'Configurar imágenes y ajustes de juegos',
+      icon: FiSettings,
+      color: 'from-gray-700 to-gray-800',
+      path: '/admin/games',
+      stats: 'Configuración'
+    },
+    {
       id: 'wallets',
       title: 'Billeteras',
       description: 'Buscar usuarios y administrar sus fondos',

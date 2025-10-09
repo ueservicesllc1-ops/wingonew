@@ -28,6 +28,7 @@ import Careers from '@/pages/Careers';
 import Promotions from '@/pages/Promotions';
 import CasinoHome from '@/pages/Casino/CasinoHome';
 import DinoGame from '@/pages/Casino/DinoGame';
+import PlinkoGame from '@/pages/Casino/PlinkoGame';
 
 // Admin Pages
 import AdminDashboard from '@/pages/Admin/Dashboard';
@@ -37,6 +38,7 @@ import AdminPromotions from '@/pages/Admin/Promotions';
 import AdminWallets from '@/pages/Admin/Wallets';
 import AdminMessages from '@/pages/Admin/Messages';
 import AdminSettings from '@/pages/Admin/Settings';
+import AdminGames from '@/pages/Admin/Games';
 import Contact from '@/pages/Contact';
 
 /**
@@ -137,6 +139,7 @@ function App() {
             <Route path="promotions" element={<Promotions />} />
             <Route path="casino" element={<CasinoHome />} />
             <Route path="casino/dino" element={<DinoGame />} />
+            <Route path="casino/plinko" element={<PlinkoGame />} />
           </Route>
 
           {/* Rutas de Administración */}
@@ -147,6 +150,7 @@ function App() {
             <Route path="wallets" element={<AdminWallets />} />
             <Route path="banners" element={<AdminBanners />} />
             <Route path="promotions" element={<AdminPromotions />} />
+            <Route path="games" element={<AdminGames />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
 
