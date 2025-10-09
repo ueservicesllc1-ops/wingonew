@@ -161,18 +161,25 @@ const PlinkoGame = () => {
       );
     }
 
-    // Paredes laterales
-    const leftWall = Bodies.rectangle(bucketsStartX - 20, height / 2, 40, height, {
+    // Paredes laterales más anchas para evitar atascamientos
+    const leftWall = Bodies.rectangle(bucketsStartX - 30, height / 2, 60, height, {
       isStatic: true,
+      restitution: 0.5,
+      friction: 0.01,
       render: { fillStyle: '#1a1a1a' }
     });
 
     const rightWall = Bodies.rectangle(
-      bucketsStartX + totalBuckets * bucketWidth + 20,
+      bucketsStartX + totalBuckets * bucketWidth + 30,
       height / 2,
-      40,
+      60,
       height,
-      { isStatic: true, render: { fillStyle: '#1a1a1a' } }
+      { 
+        isStatic: true, 
+        restitution: 0.5,
+        friction: 0.01,
+        render: { fillStyle: '#1a1a1a' } 
+      }
     );
 
     // Agregar todos los cuerpos al mundo
@@ -223,9 +230,9 @@ const PlinkoGame = () => {
         createdAt: serverTimestamp()
       });
 
-      // Crear la bola con posición X más aleatoria
+      // Crear la bola con posición X más aleatoria pero dentro de límites seguros
       const width = 600;
-      const ballX = width / 2 + (Math.random() - 0.5) * 120; // Mucha más variación en X
+      const ballX = width / 2 + (Math.random() - 0.5) * 100; // Variación controlada en X
       
       const ball = Bodies.circle(ballX, 50, 10, {
         restitution: 0.6,
@@ -247,18 +254,36 @@ const PlinkoGame = () => {
       // Reproducir beep
       if (!isMuted) playBeep(600, 100);
 
-      // Detectar cuando la bola cae en un contenedor
+      // Detectar cuando la bola cae en un contenedor o se atasca
+      let checkCount = 0;
+      let lastY = ball.position.y;
+      
       const checkBallPosition = setInterval(() => {
-        // Verificar si la bola está casi quieta y en la zona de contenedores
-        if (ball.position.y > 550 && Math.abs(ball.velocity.y) < 0.5) {
+        checkCount++;
+        
+        // Detectar si la bola está atascada (no se mueve en Y por varios checks)
+        const isStuck = Math.abs(ball.position.y - lastY) < 0.1 && checkCount > 20;
+        
+        // Verificar si la bola está casi quieta y en la zona de contenedores o está atascada
+        if ((ball.position.y > 550 && Math.abs(ball.velocity.y) < 0.5) || isStuck || checkCount > 200) {
           clearInterval(checkBallPosition);
           
-          // Determinar en qué contenedor cayó
+          let finalIndex: number;
           const totalBuckets = currentMultipliers.length;
-          const bucketWidth = 48;
-          const bucketsStartX = (width - (totalBuckets * bucketWidth)) / 2;
-          const bucketIndex = Math.floor((ball.position.x - bucketsStartX) / bucketWidth);
-          const finalIndex = Math.max(0, Math.min(bucketIndex, totalBuckets - 1));
+          
+          if (isStuck || checkCount > 200) {
+            console.log('⚠️ Bola atascada, aplicando solución de emergencia');
+            // Forzar a un contenedor central aleatorio si se atascó
+            finalIndex = Math.floor(totalBuckets / 2) + (Math.random() > 0.5 ? 1 : -1);
+            finalIndex = Math.max(0, Math.min(finalIndex, totalBuckets - 1));
+          } else {
+            // Determinar en qué contenedor cayó normalmente
+            const bucketWidth = 48;
+            const bucketsStartX = (width - (totalBuckets * bucketWidth)) / 2;
+            const bucketIndex = Math.floor((ball.position.x - bucketsStartX) / bucketWidth);
+            finalIndex = Math.max(0, Math.min(bucketIndex, totalBuckets - 1));
+          }
+          
           const multiplier = currentMultipliers[finalIndex];
           
           // Calcular ganancia
@@ -328,6 +353,9 @@ const PlinkoGame = () => {
             setLastResult(null);
           }, 2000);
         }
+        
+        // Actualizar lastY para el próximo check
+        lastY = ball.position.y;
       }, 50);
 
     } catch (error) {
