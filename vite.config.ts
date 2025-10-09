@@ -10,4 +10,14 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  preview: {
+    allowedHosts: [
+      'wingonew-production.up.railway.app',
+      '.railway.app',
+    ],
+  },
+  server: {
+    host: true,
+    strictPort: false,
+  },
 })
