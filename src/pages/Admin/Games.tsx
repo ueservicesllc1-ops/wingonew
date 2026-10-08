@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiArrowLeft, FiEdit2, FiImage, FiX, FiUpload, FiSave, FiSettings } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/config/firebase';
+import { db } from '@/config/firebase';
+import { s3StorageService } from '@/services/s3StorageService';
 import toast from 'react-hot-toast';
 
 interface ProbabilityRule {
@@ -240,10 +240,8 @@ const AdminGames = () => {
 
     setUploading(true);
     try {
-      // Subir a Firebase Storage
-      const storageRef = ref(storage, `casino/covers/${editingGame?.id}_${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
+      // Subir a Backblaze B2 (S3 proxy)
+      const url = await s3StorageService.uploadFile(file, 'casino/covers');
       
       setCoverPreview(url);
       if (editingGame) {
@@ -275,9 +273,7 @@ const AdminGames = () => {
 
     setUploading(true);
     try {
-      const storageRef = ref(storage, `casino/backgrounds/${editingGame?.id}_${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
+      const url = await s3StorageService.uploadFile(file, 'casino/backgrounds');
       
       setBackgroundPreview(url);
       if (editingGame) {
@@ -309,9 +305,7 @@ const AdminGames = () => {
 
     setUploading(true);
     try {
-      const storageRef = ref(storage, `casino/sounds/${editingGame?.id}_${type}_${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
+      const url = await s3StorageService.uploadFile(file, 'casino/sounds');
       
       if (editingGame) {
         if (type === 'engine') {

@@ -1,6 +1,6 @@
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, orderBy } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { db, storage } from '@/config/firebase';
+import { db } from '@/config/firebase';
+import { s3StorageService } from './s3StorageService';
 
 export interface Banner {
   id?: string;
@@ -12,46 +12,29 @@ export interface Banner {
 }
 
 /**
- * Servicio para gestionar los banners del Hero Slider en Firestore y Storage
+ * Servicio para gestionar los banners del Hero Slider en Firestore y Backblaze B2 S3 Storage
  */
 export const bannersService = {
   /**
-   * Subir imagen a Firebase Storage
+   * Subir imagen a Backblaze B2 via S3 Proxy
    */
   async uploadImage(file: File): Promise<string> {
     try {
-      const timestamp = Date.now();
-      const fileName = `banners/${timestamp}_${file.name}`;
-      const storageRef = ref(storage, fileName);
-      
-      // Subir archivo
-      await uploadBytes(storageRef, file);
-      
-      // Obtener URL de descarga
-      const downloadURL = await getDownloadURL(storageRef);
-      return downloadURL;
+      return await s3StorageService.uploadFile(file, 'banners');
     } catch (error) {
-      console.error('Error al subir imagen:', error);
+      console.error('Error al subir imagen a B2 S3:', error);
       throw error;
     }
   },
 
   /**
-   * Eliminar imagen de Firebase Storage
+   * Eliminar imagen de Backblaze B2 S3
    */
   async deleteImage(imageUrl: string): Promise<void> {
     try {
-      // Extraer la ruta del storage desde la URL
-      const decodedUrl = decodeURIComponent(imageUrl);
-      const startIndex = decodedUrl.indexOf('/o/') + 3;
-      const endIndex = decodedUrl.indexOf('?');
-      const filePath = decodedUrl.substring(startIndex, endIndex);
-      
-      const storageRef = ref(storage, filePath);
-      await deleteObject(storageRef);
+      await s3StorageService.deleteFile(imageUrl);
     } catch (error) {
-      console.error('Error al eliminar imagen:', error);
-      // No lanzar error si la imagen no existe
+      console.error('Error al eliminar imagen de B2 S3:', error);
     }
   },
   /**

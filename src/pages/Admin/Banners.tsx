@@ -262,7 +262,7 @@ const AdminBanners = () => {
                   alt="Banner preview" 
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    e.currentTarget.src = 'https://via.placeholder.com/1200x450/1F252B/ffffff?text=Imagen+no+disponible';
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80';
                   }}
                 />
                 {!banner.active && (
