@@ -279,21 +279,24 @@ const DinoGame = () => {
     loadGameConfig();
   }, []);
 
-  // Inicializar audios cuando se cargan las URLs
+  // Inicializar audios cuando se cargan las URLs o usar fallback local
   useEffect(() => {
-    if (engineSound) {
-      engineAudioRef.current = new Audio(engineSound);
-      engineAudioRef.current.loop = true;
-      engineAudioRef.current.volume = 0.4;
-    }
-    if (crashSound) {
-      crashAudioRef.current = new Audio(crashSound);
-      crashAudioRef.current.volume = 0.6;
-    }
-    if (cashOutSound) {
-      cashOutAudioRef.current = new Audio(cashOutSound);
-      cashOutAudioRef.current.volume = 0.5;
-    }
+    const engineUrl = engineSound || '/sounds/dino_engine.wav';
+    const crashUrl = crashSound || '/sounds/dino_crash.wav';
+    const cashOutUrl = cashOutSound || '/sounds/dino_cashout.wav';
+
+    engineAudioRef.current = new Audio(engineUrl);
+    engineAudioRef.current.loop = true;
+    engineAudioRef.current.volume = 0.45;
+    engineAudioRef.current.preload = 'auto';
+
+    crashAudioRef.current = new Audio(crashUrl);
+    crashAudioRef.current.volume = 0.7;
+    crashAudioRef.current.preload = 'auto';
+
+    cashOutAudioRef.current = new Audio(cashOutUrl);
+    cashOutAudioRef.current.volume = 0.55;
+    cashOutAudioRef.current.preload = 'auto';
   }, [engineSound, crashSound, cashOutSound]);
 
   // Manejar mute/unmute
@@ -400,6 +403,12 @@ const DinoGame = () => {
         const elapsed = (Date.now() - startTime) / 1000;
         const mult = calculateMultiplier(elapsed);
         
+        // Modulación dinámica de aceleración del motor (RPM/pitch aumenta con el multiplicador)
+        if (engineAudioRef.current && !isMuted) {
+          const rate = Math.min(3.0, 1.0 + Math.log(Math.max(1, mult)) * 0.7);
+          engineAudioRef.current.playbackRate = rate;
+        }
+
         setGameState(prev => {
           if (prev.crashPoint && mult >= prev.crashPoint) {
             crashGame(prev.crashPoint);
@@ -488,9 +497,10 @@ const DinoGame = () => {
     crashedThisRound.current = false; // Reset al inicio de cada ronda
     console.log('Round started, crash point:', crashPoint);
     
-    // Forzar reproducción del sonido del motor
+    // Forzar reproducción del sonido del motor y reiniciar revoluciones
     if (engineAudioRef.current && !isMuted) {
       engineAudioRef.current.currentTime = 0;
+      engineAudioRef.current.playbackRate = 1.0;
       
       // Intentar reproducir inmediatamente
       const playPromise = engineAudioRef.current.play();
@@ -538,10 +548,11 @@ const DinoGame = () => {
     
     console.log('Game crashed at:', crashPoint);
     
-    // Detener sonido del motor
+    // Detener sonido del motor y resetear velocidad
     if (engineAudioRef.current) {
       engineAudioRef.current.pause();
       engineAudioRef.current.currentTime = 0;
+      engineAudioRef.current.playbackRate = 1.0;
     }
     
     // Reproducir sonido de crash
