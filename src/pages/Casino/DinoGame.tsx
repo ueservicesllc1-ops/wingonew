@@ -281,17 +281,17 @@ const DinoGame = () => {
 
   // Inicializar audios cuando se cargan las URLs o usar fallback local
   useEffect(() => {
-    const engineUrl = engineSound || '/sounds/dino_engine.wav';
-    const crashUrl = crashSound || '/sounds/dino_crash.wav';
+    const engineUrl = engineSound || '/sounds/dino_engine.ogg';
+    const crashUrl = crashSound || '/sounds/dino_crash.ogg';
     const cashOutUrl = cashOutSound || '/sounds/dino_cashout.wav';
 
     engineAudioRef.current = new Audio(engineUrl);
     engineAudioRef.current.loop = true;
-    engineAudioRef.current.volume = 0.45;
+    engineAudioRef.current.volume = 0.5;
     engineAudioRef.current.preload = 'auto';
 
     crashAudioRef.current = new Audio(crashUrl);
-    crashAudioRef.current.volume = 0.7;
+    crashAudioRef.current.volume = 0.75;
     crashAudioRef.current.preload = 'auto';
 
     cashOutAudioRef.current = new Audio(cashOutUrl);
