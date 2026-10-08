@@ -403,9 +403,9 @@ const DinoGame = () => {
         const elapsed = (Date.now() - startTime) / 1000;
         const mult = calculateMultiplier(elapsed);
         
-        // Modulación dinámica de aceleración del motor (RPM/pitch aumenta con el multiplicador)
+        // Modulación acústica natural de aceleración de motor V8 (curva progresiva de RPM)
         if (engineAudioRef.current && !isMuted) {
-          const rate = Math.min(3.0, 1.0 + Math.log(Math.max(1, mult)) * 0.7);
+          const rate = Math.min(2.5, 1.0 + Math.log10(Math.max(1, mult)) * 0.6 + (mult - 1.0) * 0.08);
           engineAudioRef.current.playbackRate = rate;
         }
 

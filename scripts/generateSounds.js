@@ -7,11 +7,13 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Helper para crear un buffer WAV PCM 16-bit 44100Hz mono/stereo
-function createWavBuffer(samples, sampleRate = 44100, numChannels = 1) {
+// Helper para crear un buffer WAV PCM 16-bit 44100Hz stereo/mono
+function createWavBuffer(samplesL, samplesR = null, sampleRate = 44100) {
+  const numChannels = samplesR ? 2 : 1;
+  const numSamples = samplesL.length;
   const byteRate = sampleRate * numChannels * 2;
   const blockAlign = numChannels * 2;
-  const dataSize = samples.length * 2;
+  const dataSize = numSamples * numChannels * 2;
   const buffer = Buffer.alloc(44 + dataSize);
 
   // RIFF header
@@ -21,161 +23,295 @@ function createWavBuffer(samples, sampleRate = 44100, numChannels = 1) {
 
   // fmt subchunk
   buffer.write('fmt ', 12);
-  buffer.writeUInt32LE(16, 16); // subchunk1 size
-  buffer.writeUInt16LE(1, 20);  // PCM format
+  buffer.writeUInt32LE(16, 16);
+  buffer.writeUInt16LE(1, 20); // PCM
   buffer.writeUInt16LE(numChannels, 22);
   buffer.writeUInt32LE(sampleRate, 24);
   buffer.writeUInt32LE(byteRate, 28);
   buffer.writeUInt16LE(blockAlign, 32);
-  buffer.writeUInt16LE(16, 34); // 16 bits per sample
+  buffer.writeUInt16LE(16, 34); // 16-bit
 
   // data subchunk
   buffer.write('data', 36);
   buffer.writeUInt32LE(dataSize, 40);
 
-  // Samples
-  for (let i = 0; i < samples.length; i++) {
-    const s = Math.max(-1, Math.min(1, samples[i]));
-    const intSample = s < 0 ? s * 0x8000 : s * 0x7FFF;
-    buffer.writeInt16LE(Math.floor(intSample), 44 + i * 2);
+  let offset = 44;
+  for (let i = 0; i < numSamples; i++) {
+    // Left
+    let sL = Math.max(-1, Math.min(1, samplesL[i]));
+    let intSL = sL < 0 ? sL * 0x8000 : sL * 0x7FFF;
+    buffer.writeInt16LE(Math.floor(intSL), offset);
+    offset += 2;
+
+    if (numChannels === 2) {
+      let sR = Math.max(-1, Math.min(1, samplesR[i]));
+      let intSR = sR < 0 ? sR * 0x8000 : sR * 0x7FFF;
+      buffer.writeInt16LE(Math.floor(intSR), offset);
+      offset += 2;
+    }
   }
 
   return buffer;
 }
 
-// 1. Sonido de motor de carreras / Fórmula 1 (Loop realista de 3 segundos)
-function generateEngineSound(duration = 3.0, sampleRate = 44100) {
+// Biquad Bandpass Filter implementation
+class BiquadFilter {
+  constructor(type, freq, q, sampleRate = 44100) {
+    this.type = type;
+    this.freq = freq;
+    this.q = q;
+    this.sampleRate = sampleRate;
+    this.x1 = 0; this.x2 = 0;
+    this.y1 = 0; this.y2 = 0;
+    this.recalculate();
+  }
+
+  recalculate() {
+    const w0 = 2 * Math.PI * this.freq / this.sampleRate;
+    const cosw0 = Math.cos(w0);
+    const sinw0 = Math.sin(w0);
+    const alpha = sinw0 / (2 * this.q);
+
+    if (this.type === 'bandpass') {
+      this.b0 = alpha;
+      this.b1 = 0;
+      this.b2 = -alpha;
+      this.a0 = 1 + alpha;
+      this.a1 = -2 * cosw0;
+      this.a2 = 1 - alpha;
+    } else if (this.type === 'lowpass') {
+      this.b0 = (1 - cosw0) / 2;
+      this.b1 = 1 - cosw0;
+      this.b2 = (1 - cosw0) / 2;
+      this.a0 = 1 + alpha;
+      this.a1 = -2 * cosw0;
+      this.a2 = 1 - alpha;
+    } else if (this.type === 'highpass') {
+      this.b0 = (1 + cosw0) / 2;
+      this.b1 = -(1 + cosw0);
+      this.b2 = (1 + cosw0) / 2;
+      this.a0 = 1 + alpha;
+      this.a1 = -2 * cosw0;
+      this.a2 = 1 - alpha;
+    }
+  }
+
+  process(sample) {
+    const y = (this.b0 / this.a0) * sample +
+              (this.b1 / this.a0) * this.x1 +
+              (this.b2 / this.a0) * this.x2 -
+              (this.a1 / this.a0) * this.y1 -
+              (this.a2 / this.a0) * this.y2;
+
+    this.x2 = this.x1;
+    this.x1 = sample;
+    this.y2 = this.y1;
+    this.y1 = y;
+    return y;
+  }
+}
+
+// 1. Motor V8 / GT Racing realista (Generación física granular por pulsos de pistón y resonancia de escape)
+function generateRealisticEngine(duration = 4.0, sampleRate = 44100) {
   const numSamples = Math.floor(duration * sampleRate);
-  const samples = new Float32Array(numSamples);
-  const baseFreq = 110; // Frecuencia base de revoluciones
+  const outL = new Float32Array(numSamples);
+  const outR = new Float32Array(numSamples);
+
+  // Filtros resonantes del cuerpo del motor y escape (Acoustic Cavity Resonators)
+  const fExhaust1 = new BiquadFilter('bandpass', 165, 3.5, sampleRate);
+  const fExhaust2 = new BiquadFilter('bandpass', 380, 4.0, sampleRate);
+  const fThroat = new BiquadFilter('bandpass', 720, 5.0, sampleRate);
+  const fManifold = new BiquadFilter('bandpass', 1450, 4.5, sampleRate);
+  const fRasp = new BiquadFilter('bandpass', 2900, 3.0, sampleRate);
+  const fLowPass = new BiquadFilter('lowpass', 5500, 0.7, sampleRate);
+
+  // Configuración de motor V8 (8 cilindros disparando en orden de encendido)
+  const numCylinders = 8;
+  const cylinderPhases = [0, 0.25, 0.5, 0.75, 0.125, 0.375, 0.625, 0.875];
+  
+  // RPM de ralentí deportivo alto (~2400 RPM base = 40 Hz de rotación del cigüeñal = 160 explosiones/seg)
+  const baseRPS = 48.0; 
+
+  let enginePhase = 0;
 
   for (let i = 0; i < numSamples; i++) {
     const t = i / sampleRate;
+
+    // Aceleración natural continua y sutil fluctuación mecánica (jitter)
+    const revJitter = Math.sin(2 * Math.PI * 4.2 * t) * 1.5 + Math.sin(2 * Math.PI * 9.7 * t) * 0.8;
+    const currentRPS = baseRPS + revJitter;
     
-    // Modulación sutil de RPM para darle vida de motor real
-    const rpmMod = Math.sin(2 * Math.PI * 3.5 * t) * 4;
-    const f0 = baseFreq + rpmMod;
+    enginePhase += (currentRPS / sampleRate);
+    if (enginePhase >= 1.0) enginePhase -= 1.0;
 
-    // Armónicos del motor de combustión / cilindros
-    const h1 = Math.sin(2 * Math.PI * f0 * t) * 0.4;
-    const h2 = Math.sin(2 * Math.PI * (f0 * 2) * t) * 0.35;
-    const h3 = Math.sin(2 * Math.PI * (f0 * 3) * t) * 0.25;
-    const h4 = Math.sin(2 * Math.PI * (f0 * 4) * t) * 0.2;
-    const h6 = Math.sin(2 * Math.PI * (f0 * 6) * t) * 0.15;
-    const h8 = Math.sin(2 * Math.PI * (f0 * 8) * t) * 0.1;
-
-    // Silbido de turbo (alta frecuencia modulada)
-    const turboFreq = 1800 + Math.sin(2 * Math.PI * 7 * t) * 120;
-    const turbo = Math.sin(2 * Math.PI * turboFreq * t) * 0.08;
-
-    // Rugido / escape (ruido filtrado)
-    const noise = (Math.random() * 2 - 1) * 0.12 * (0.5 + 0.5 * Math.sin(2 * Math.PI * f0 * 2 * t));
-
-    // Mezcla
-    let raw = h1 + h2 + h3 + h4 + h6 + h8 + turbo + noise;
-
-    // Saturación tipo distorsión de escape deportivo (warm overdrive)
-    raw = Math.tanh(raw * 1.6) * 0.7;
-
-    // Crossfade en bordes para loop perfecto sin clicks
-    const fadeLen = sampleRate * 0.05; // 50ms fade
-    if (i < fadeLen) {
-      raw *= (i / fadeLen);
-    } else if (i > numSamples - fadeLen) {
-      raw *= ((numSamples - i) / fadeLen);
+    // Sumar pulsos asimétricos de combustión de cada cilindro
+    let rawCylinders = 0;
+    for (let c = 0; c < numCylinders; c++) {
+      let cylPhase = (enginePhase + cylinderPhases[c]) % 1.0;
+      
+      // Pulso de onda de choque de explosión: ataque ultra rápido no lineal y compresión
+      // Simula la apertura de la válvula de escape bajo presión extrema
+      if (cylPhase < 0.35) {
+        const p = cylPhase / 0.35;
+        // Forma de onda de pulso de escape real: pico agudo seguido de depresión acústica
+        const shockWave = Math.sin(Math.PI * p) * Math.exp(-p * 5.0) - Math.sin(2 * Math.PI * p) * 0.3 * Math.exp(-p * 8.0);
+        rawCylinders += shockWave;
+      }
     }
 
-    samples[i] = raw;
+    // Ruido de flujo turbulento de aire de admisión / escape
+    const whiteNoise = (Math.random() * 2 - 1);
+    const airTurbulence = whiteNoise * 0.25 * (0.6 + 0.4 * rawCylinders);
+
+    // Silbido agudo de compresor / turbocharger (Twin-turbo spool)
+    const turboFreq = 3400 + Math.sin(2 * Math.PI * 6.0 * t) * 180;
+    const turboWhine = Math.sin(2 * Math.PI * turboFreq * t) * 0.045;
+
+    // Sub-bajo acústico profundo del bloque de motor (thump de cilindros)
+    const subBass = Math.sin(2 * Math.PI * (currentRPS * 2) * t) * 0.35;
+
+    // Paso por las resonancias de escape (Formants)
+    const e1 = fExhaust1.process(rawCylinders) * 0.65;
+    const e2 = fExhaust2.process(rawCylinders) * 0.55;
+    const throat = fThroat.process(rawCylinders) * 0.45;
+    const manifold = fManifold.process(rawCylinders + airTurbulence) * 0.35;
+    const rasp = fRasp.process(rawCylinders + airTurbulence) * 0.25;
+
+    // Mezcla de todas las capas acústicas
+    let mix = (e1 + e2 + throat + manifold + rasp + subBass + turboWhine + airTurbulence * 0.2);
+
+    // Saturación analógica de escape deportivo (Warm asymmetric overdrive)
+    // Esto quita completamente cualquier sonido de sintetizador básico y le da la crudeza de motor real
+    mix = Math.tanh(mix * 1.8);
+    mix = fLowPass.process(mix);
+
+    // Crossfade en bordes para loop impecable
+    const fadeLen = Math.floor(sampleRate * 0.08); // 80ms fade
+    if (i < fadeLen) {
+      mix *= (i / fadeLen);
+    } else if (i > numSamples - fadeLen) {
+      mix *= ((numSamples - i) / fadeLen);
+    }
+
+    // Stereo spread sutil para dar espacialidad al habitáculo/pista
+    outL[i] = mix * 0.95;
+    outR[i] = mix * 0.98;
   }
 
-  return createWavBuffer(samples, sampleRate);
+  return createWavBuffer(outL, outR, sampleRate);
 }
 
-// 2. Sonido de Crash / Motor fundido / Explosión metálica (1.5 segundos)
-function generateCrashSound(duration = 1.6, sampleRate = 44100) {
+// 2. Sonido de Crash / Motor Fundido (Impacto metálico masivo, ruptura de pistón, explosión y derrape)
+function generateRealisticCrash(duration = 2.2, sampleRate = 44100) {
   const numSamples = Math.floor(duration * sampleRate);
-  const samples = new Float32Array(numSamples);
+  const outL = new Float32Array(numSamples);
+  const outR = new Float32Array(numSamples);
+
+  const subFilter = new BiquadFilter('lowpass', 120, 1.2, sampleRate);
+  const metalFilter1 = new BiquadFilter('bandpass', 1150, 6.0, sampleRate);
+  const metalFilter2 = new BiquadFilter('bandpass', 2400, 8.0, sampleRate);
+  const metalFilter3 = new BiquadFilter('bandpass', 4600, 5.0, sampleRate);
+  const steamFilter = new BiquadFilter('bandpass', 3200, 2.0, sampleRate);
 
   for (let i = 0; i < numSamples; i++) {
     const t = i / sampleRate;
 
-    // 1. Golpe sordo grave / Sub-bass punch inicial (impacto)
-    const subEnv = Math.exp(-t * 9);
-    const subBass = Math.sin(2 * Math.PI * (90 * Math.exp(-t * 12) + 40) * t) * subEnv * 0.7;
+    // 1. Golpe de impacto inicial ultra potente (Metal slam + Sub boom)
+    const impactEnv = Math.exp(-t * 14.0);
+    const subImpact = Math.sin(2 * Math.PI * (110 * Math.exp(-t * 18.0) + 38) * t) * impactEnv * 1.2;
+    const subFiltered = subFilter.process(subImpact);
 
-    // 2. Explosión / Roto de metal (ruido blanco moldeado con decaimiento)
-    const noiseEnv = Math.exp(-t * 5.5);
-    const noise = (Math.random() * 2 - 1) * noiseEnv * 0.65;
+    // 2. Ruptura violenta de bielas / fierros retorciéndose (Heavy distortion crunch)
+    const crunchEnv = Math.exp(-t * 6.5);
+    const crunchNoise = (Math.random() * 2 - 1) * crunchEnv * 0.85;
 
-    // 3. Resonancia metálica chirriante (pedazos de motor / fierro)
-    const metalEnv = Math.exp(-t * 3.5);
-    const metal1 = Math.sin(2 * Math.PI * 480 * t) * metalEnv * 0.2;
-    const metal2 = Math.sin(2 * Math.PI * 860 * t) * metalEnv * 0.15;
-    const metal3 = Math.sin(2 * Math.PI * 1420 * t) * Math.exp(-t * 7) * 0.1;
+    // 3. Resonancias de carrocería y restos metálicos
+    const m1 = metalFilter1.process(crunchNoise) * 0.6;
+    const m2 = metalFilter2.process(crunchNoise) * 0.45;
+    const m3 = metalFilter3.process(crunchNoise) * 0.35;
 
-    // 4. Chisporroteo / escape de vapor final (de 0.3s en adelante)
-    let sizzle = 0;
-    if (t > 0.15) {
-      const sizzleEnv = Math.exp(-(t - 0.15) * 4) * 0.2;
-      sizzle = (Math.random() * 2 - 1) * sizzleEnv;
+    // 4. Chillido de frenos / derrape violento (Tire screeching)
+    let tireSkid = 0;
+    if (t < 0.7) {
+      const skidEnv = Math.sin(Math.PI * (t / 0.7)) * Math.exp(-t * 2.5);
+      const skidFreq = 1850 + Math.sin(2 * Math.PI * 35 * t) * 400;
+      tireSkid = (Math.sin(2 * Math.PI * skidFreq * t) + (Math.random() * 2 - 1) * 0.3) * skidEnv * 0.4;
     }
 
-    let mix = subBass + noise + metal1 + metal2 + metal3 + sizzle;
-    mix = Math.tanh(mix * 1.5) * 0.85;
+    // 5. Escape de vapor a presión del radiador / motor fundido hirviendo
+    let steam = 0;
+    if (t > 0.25) {
+      const steamEnv = Math.exp(-(t - 0.25) * 2.2) * (1 - Math.exp(-(t - 0.25) * 8.0));
+      steam = steamFilter.process((Math.random() * 2 - 1)) * steamEnv * 0.5;
+    }
 
-    samples[i] = mix;
+    let mixL = subFiltered + crunchNoise * 0.5 + m1 + m2 + m3 + tireSkid * 0.9 + steam;
+    let mixR = subFiltered + crunchNoise * 0.5 + m1 * 0.9 + m2 * 1.1 + m3 * 0.8 + tireSkid * 0.7 + steam * 1.1;
+
+    // Master clipping suave
+    mixL = Math.tanh(mixL * 1.6) * 0.92;
+    mixR = Math.tanh(mixR * 1.6) * 0.92;
+
+    outL[i] = mixL;
+    outR[i] = mixR;
   }
 
-  return createWavBuffer(samples, sampleRate);
+  return createWavBuffer(outL, outR, sampleRate);
 }
 
-// 3. Sonido de Cash Out / Ganancia (0.6 segundos)
-function generateCashOutSound(duration = 0.7, sampleRate = 44100) {
+// 3. Sonido de Cash Out / Victoria de Casino (Monedas y Chime brillante)
+function generateRealisticCashOut(duration = 0.8, sampleRate = 44100) {
   const numSamples = Math.floor(duration * sampleRate);
-  const samples = new Float32Array(numSamples);
+  const outL = new Float32Array(numSamples);
+  const outR = new Float32Array(numSamples);
 
-  // Arpegio brillante ganador: C6 (1046.5Hz) -> E6 (1318.5Hz) -> G6 (1567.9Hz) -> C7 (2093.0Hz)
-  const notes = [
-    { freq: 1046.5, start: 0.00, dur: 0.25 },
-    { freq: 1318.5, start: 0.08, dur: 0.25 },
-    { freq: 1567.9, start: 0.16, dur: 0.25 },
-    { freq: 2093.0, start: 0.24, dur: 0.45 }
+  // Arpegio de campanas metálicas
+  const chimes = [
+    { freq: 1174.66, time: 0.00, dur: 0.35 }, // D6
+    { freq: 1479.98, time: 0.07, dur: 0.35 }, // F#6
+    { freq: 1760.00, time: 0.14, dur: 0.40 }, // A6
+    { freq: 2349.32, time: 0.21, dur: 0.55 }, // D7
   ];
 
   for (let i = 0; i < numSamples; i++) {
     const t = i / sampleRate;
-    let mix = 0;
+    let chimeMix = 0;
 
-    for (const note of notes) {
-      if (t >= note.start && t < note.start + note.dur) {
-        const localT = t - note.start;
-        const env = Math.exp(-localT * 8);
-        const tone = Math.sin(2 * Math.PI * note.freq * localT);
-        const sparkle = Math.sin(2 * Math.PI * (note.freq * 2) * localT) * 0.3;
-        mix += (tone + sparkle) * env * 0.28;
+    for (const c of chimes) {
+      if (t >= c.time && t < c.time + c.dur) {
+        const localT = t - c.time;
+        const env = Math.exp(-localT * 7.0);
+        // Campana con armónicos naturales
+        const fund = Math.sin(2 * Math.PI * c.freq * localT);
+        const harm2 = Math.sin(2 * Math.PI * c.freq * 2.76 * localT) * 0.25;
+        const harm3 = Math.sin(2 * Math.PI * c.freq * 5.4 * localT) * 0.12;
+        chimeMix += (fund + harm2 + harm3) * env * 0.22;
       }
     }
 
-    // Efecto monedas / caja registradora 'ding'
-    if (t < 0.15) {
-      const click = Math.sin(2 * Math.PI * 3200 * t) * Math.exp(-t * 40) * 0.2;
-      mix += click;
+    // Tintineo metálico de monedas
+    let coinClicks = 0;
+    if (t < 0.25) {
+      const clickEnv = Math.exp(-t * 30.0);
+      const click = Math.sin(2 * Math.PI * 4200 * t) * clickEnv * 0.25;
+      coinClicks += click;
     }
 
-    samples[i] = Math.tanh(mix) * 0.8;
+    let mix = Math.tanh((chimeMix + coinClicks) * 1.3) * 0.85;
+    outL[i] = mix;
+    outR[i] = mix;
   }
 
-  return createWavBuffer(samples, sampleRate);
+  return createWavBuffer(outL, outR, sampleRate);
 }
 
 async function main() {
-  console.log('🎵 Generando efectos de sonido realistas para Speed Run...');
+  console.log('🏎️ Generando motor V8 granular hiperrealista y crash de impacto para Speed Run...');
 
-  const engineWav = generateEngineSound(3.0);
-  const crashWav = generateCrashSound(1.6);
-  const cashOutWav = generateCashOutSound(0.7);
+  const engineWav = generateRealisticEngine(4.0);
+  const crashWav = generateRealisticCrash(2.2);
+  const cashOutWav = generateRealisticCashOut(0.8);
 
-  // Guardar en public/sounds
   const publicSoundsDir = path.join(process.cwd(), 'public', 'sounds');
   if (!fs.existsSync(publicSoundsDir)) {
     fs.mkdirSync(publicSoundsDir, { recursive: true });
@@ -184,7 +320,7 @@ async function main() {
   fs.writeFileSync(path.join(publicSoundsDir, 'dino_engine.wav'), engineWav);
   fs.writeFileSync(path.join(publicSoundsDir, 'dino_crash.wav'), crashWav);
   fs.writeFileSync(path.join(publicSoundsDir, 'dino_cashout.wav'), cashOutWav);
-  console.log('✓ Guardados localmente en public/sounds/');
+  console.log('✓ Guardados localmente en public/sounds/ (WAV Stereo 44.1kHz)');
 
   // Subir a Backblaze B2 S3
   const s3Client = new S3Client({
@@ -211,7 +347,7 @@ async function main() {
       Body: s.buffer,
       ContentType: 'audio/wav',
     }));
-    const publicUrl = `https://f005.backblazeb2.com/file/${bucketName}/${s.key}`;
+    const publicUrl = `https://f005.backblazeb2.com/file/${bucketName}/${s.key}?t=${Date.now()}`;
     uploadedUrls[s.key] = publicUrl;
     console.log(`✓ Subido a B2: ${publicUrl}`);
   }
@@ -243,7 +379,7 @@ async function main() {
       games[dinoIndex].cashOutSound = uploadedUrls['casino/sounds/dino_cashout.wav'];
 
       await updateDoc(docRef, { games });
-      console.log('✅ Firestore actualizado con éxito con los audios en Backblaze B2!');
+      console.log('✅ Firestore actualizado con éxito con los audios hiperrealistas en Backblaze B2!');
     }
   }
 
