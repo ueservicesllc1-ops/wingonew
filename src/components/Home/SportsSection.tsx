@@ -53,25 +53,25 @@ const SportsSection = () => {
   ];
 
   return (
-    <section className="py-16">
-      <div className="container mx-auto px-4">
+    <section className="py-12">
+      <div className="px-4">
         {/* Título de la sección */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="mb-8"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Deportes <span className="text-gradient">Disponibles</span>
+          <h2 className="section-title text-2xl md:text-3xl text-white mb-2">
+            Deportes <span className="text-gradient">disponibles</span>
           </h2>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Apuesta en tus deportes favoritos con las mejores cuotas del mercado
+          <p className="text-dark-300">
+            Apuesta en tus deportes favoritos con las mejores cuotas del mercado.
           </p>
         </motion.div>
 
         {/* Grid de deportes */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
           {deportes.map((deporte, index) => (
             <SportsCard
               key={deporte.name}

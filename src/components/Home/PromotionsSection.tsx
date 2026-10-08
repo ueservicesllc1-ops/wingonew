@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { FiGift, FiTrendingUp, FiUsers, FiPercent } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
+import { FiGift, FiTrendingUp, FiUsers, FiPercent, FiArrowRight } from 'react-icons/fi';
 
 /**
  * Sección de promociones con tarjetas animadas
@@ -11,16 +12,18 @@ const PromotionsSection = () => {
       title: 'Bono de Bienvenida',
       description: 'Duplica tu primer depósito hasta $500',
       icon: FiGift,
-      color: 'from-primary-500 to-primary-700',
+      color: 'from-primary-500 to-primary-800',
+      glow: 'bg-primary-500/40',
       badge: 'NUEVO',
-      terms: 'T&C Aplican',
+      terms: 'T&C aplican',
     },
     {
       id: 2,
       title: 'Cashback Semanal',
       description: 'Recupera hasta 10% de tus pérdidas',
       icon: FiPercent,
-      color: 'from-green-500 to-green-700',
+      color: 'from-yellow-500 to-cyan-500',
+      glow: 'bg-yellow-500/40',
       badge: 'POPULAR',
       terms: 'Cada semana',
     },
@@ -29,7 +32,8 @@ const PromotionsSection = () => {
       title: 'Apuesta sin Riesgo',
       description: 'Tu primera apuesta es gratis hasta $100',
       icon: FiTrendingUp,
-      color: 'from-secondary-500 to-secondary-700',
+      color: 'from-secondary-500 to-orange-500',
+      glow: 'bg-secondary-500/40',
       badge: 'HOT',
       terms: 'Nuevos usuarios',
     },
@@ -38,110 +42,86 @@ const PromotionsSection = () => {
       title: 'Refiere y Gana',
       description: 'Obtén $50 por cada amigo referido',
       icon: FiUsers,
-      color: 'from-purple-500 to-purple-700',
+      color: 'from-fuchsia-500 to-primary-600',
+      glow: 'bg-fuchsia-500/40',
       badge: 'LIMITADO',
       terms: 'Sin límite',
     },
   ];
 
   return (
-    <section className="py-16">
-      <div className="container mx-auto px-4">
+    <section className="py-12">
+      <div className="px-4">
         {/* Título de la sección */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="flex items-end justify-between mb-8"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Promociones <span className="text-gradient">Exclusivas</span>
-          </h2>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Aprovecha nuestras increíbles ofertas y maximiza tus ganancias
-          </p>
+          <div>
+            <h2 className="section-title text-2xl md:text-3xl text-white mb-2">
+              Promociones <span className="text-gradient">exclusivas</span>
+            </h2>
+            <p className="text-dark-300">Aprovecha nuestras ofertas y maximiza tus ganancias.</p>
+          </div>
+          <Link
+            to="/promotions"
+            className="hidden sm:flex items-center space-x-1.5 text-sm font-semibold text-yellow-400 hover:text-yellow-300"
+          >
+            <span>Ver todas</span>
+            <FiArrowRight className="w-4 h-4" />
+          </Link>
         </motion.div>
 
         {/* Grid de promociones */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-5">
           {promociones.map((promo, index) => (
             <motion.div
               key={promo.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -10, scale: 1.02 }}
+              transition={{ delay: index * 0.08 }}
+              whileHover={{ y: -8 }}
               className="relative group"
             >
-              <div className="relative overflow-hidden rounded-2xl bg-dark-800 border border-dark-700 hover:border-primary-500 transition-all duration-300">
-                {/* Badge */}
-                <div className="absolute top-4 right-4 z-10">
-                  <span className="px-3 py-1 bg-secondary-500 text-white text-xs font-bold rounded-full shadow-glow-orange">
+              <div className="relative overflow-hidden surface-card h-full hover:border-white/25">
+                {/* Cabecera con gradiente */}
+                <div className={`h-36 bg-gradient-to-br ${promo.color} relative overflow-hidden`}>
+                  <div className="absolute inset-0 grid-pattern opacity-50" />
+                  <div className={`absolute -top-12 -right-12 w-44 h-44 rounded-full ${promo.glow} blur-2xl`} />
+                  <promo.icon className="absolute -bottom-5 -right-3 w-32 h-32 text-white/15 group-hover:text-white/25 group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500" />
+
+                  <span className="absolute top-4 left-4 px-3 py-1 bg-black/35 backdrop-blur-md border border-white/20 text-white text-[10px] font-extrabold tracking-widest rounded-full">
                     {promo.badge}
                   </span>
-                </div>
 
-                {/* Fondo con gradiente */}
-                <div className={`h-32 bg-gradient-to-br ${promo.color} relative overflow-hidden`}>
-                  {/* Patrón de fondo */}
-                  <div className="absolute inset-0 opacity-20">
-                    <div className="absolute inset-0" style={{
-                      backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-                      backgroundSize: '20px 20px',
-                    }} />
+                  <div className="absolute bottom-4 left-4 w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
+                    <promo.icon className="w-6 h-6 text-white" />
                   </div>
-
-                  {/* Icono */}
-                  <div className="absolute bottom-4 left-4">
-                    <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
-                      <promo.icon className="w-8 h-8 text-white" />
-                    </div>
-                  </div>
-
-                  {/* Efectos de luz */}
-                  <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
                 </div>
 
                 {/* Contenido */}
-                <div className="p-6 space-y-3">
-                  <h3 className="text-xl font-bold text-white">{promo.title}</h3>
-                  <p className="text-gray-400 text-sm">{promo.description}</p>
-                  
-                  <div className="pt-4 border-t border-dark-700">
-                    <p className="text-xs text-gray-500 mb-3">{promo.terms}</p>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`w-full py-2 rounded-lg bg-gradient-to-r ${promo.color} text-white font-bold text-sm shadow-lg hover:shadow-glow transition-all`}
+                <div className="p-5 space-y-3">
+                  <h3 className="font-display text-lg font-bold text-white">{promo.title}</h3>
+                  <p className="text-dark-300 text-sm leading-relaxed">{promo.description}</p>
+
+                  <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                    <span className="text-xs text-dark-400">{promo.terms}</span>
+                    <Link
+                      to="/promotions"
+                      className="flex items-center space-x-1 text-sm font-bold text-yellow-400 group-hover:text-yellow-300"
                     >
-                      Reclamar Ahora
-                    </motion.button>
+                      <span>Reclamar</span>
+                      <FiArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </Link>
                   </div>
                 </div>
-
-                {/* Efecto de brillo al hacer hover */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
               </div>
             </motion.div>
           ))}
         </div>
-
-        {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mt-12"
-        >
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-8 py-4 bg-gradient-primary text-white rounded-xl font-bold text-lg shadow-glow hover:shadow-glow-orange transition-all"
-          >
-            Ver Todas las Promociones
-          </motion.button>
-        </motion.div>
       </div>
     </section>
   );

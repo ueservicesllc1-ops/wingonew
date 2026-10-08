@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { FiClock } from 'react-icons/fi';
+import { FiClock, FiPlus } from 'react-icons/fi';
 import { useBetSlipStore } from '@/store/useBetSlipStore';
 import toast from 'react-hot-toast';
 
@@ -42,7 +42,7 @@ const MatchCard = ({
 
   const handleBetClick = (team: string, odds: number) => {
     setSelectedBet(team);
-    
+
     addBet({
       id: `${id}-${team}`,
       eventId: id,
@@ -56,133 +56,105 @@ const MatchCard = ({
     });
 
     toast.success(`${team} agregado al boleto`);
-    
+
     setTimeout(() => setSelectedBet(null), 300);
   };
+
+  const oddsOptions = [
+    { key: homeTeam, label: '1', sub: 'Local', odds: homeOdds },
+    ...(drawOdds ? [{ key: 'Empate', label: 'X', sub: 'Empate', odds: drawOdds }] : []),
+    { key: awayTeam, label: '2', sub: 'Visitante', odds: awayOdds },
+  ];
+
+  const Logo = ({ src, name, tone }: { src?: string; name: string; tone: string }) =>
+    src ? (
+      <img src={src} alt={name} className="w-14 h-14 object-contain" />
+    ) : (
+      <div className={`w-14 h-14 rounded-2xl ${tone} flex items-center justify-center font-display text-2xl font-extrabold text-white shadow-lg`}>
+        {name.charAt(0)}
+      </div>
+    );
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="bg-dark-800 border border-dark-700 rounded-xl overflow-hidden hover:border-primary-500 transition-all duration-300 group"
+      whileHover={{ y: -3 }}
+      className="surface-card overflow-hidden hover:border-yellow-500/40 group relative"
     >
+      {isLive && <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-secondary-500 via-primary-500 to-yellow-400" />}
+
       {/* Header del partido */}
-      <div className="px-4 py-3 border-b border-dark-700 flex items-center justify-between bg-dark-900/50">
-        <div className="flex items-center space-x-3">
+      <div className="px-5 py-3 flex items-center justify-between gap-3">
+        <div className="flex items-center space-x-3 min-w-0">
           {isLive && (
-            <motion.div
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              className="flex items-center space-x-1 text-green-500 text-xs font-bold"
-            >
-              <span className="w-2 h-2 bg-green-500 rounded-full" />
-              <span>EN VIVO</span>
-            </motion.div>
+            <span className="badge-live">
+              <span className="live-dot" /> En vivo
+            </span>
           )}
-          <span className="text-sm text-gray-400">{league}</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-dark-300 truncate">{league}</span>
         </div>
-        
-        <div className="flex items-center space-x-2 text-sm text-gray-400">
-          <FiClock className="w-4 h-4" />
+
+        <div className="flex items-center space-x-1.5 text-xs text-dark-200 bg-white/5 px-2.5 py-1 rounded-full whitespace-nowrap shrink-0">
+          <FiClock className="w-3.5 h-3.5 text-yellow-400" />
           <span>{time}</span>
         </div>
       </div>
 
-      {/* Equipos y logos */}
-      <div className="p-4 space-y-4">
-        <div className="grid grid-cols-3 items-center gap-4">
-          {/* Equipo Local */}
-          <div className="text-center">
-            <div className="flex flex-col items-center space-y-2">
-              {homeLogo ? (
-                <img src={homeLogo} alt={homeTeam} className="w-12 h-12 object-contain" />
-              ) : (
-                <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center text-xl font-bold">
-                  {homeTeam.charAt(0)}
-                </div>
-              )}
-              <span className="text-white font-medium text-sm">{homeTeam}</span>
-            </div>
+      {/* Equipos */}
+      <div className="px-5 pb-4">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+          <div className="flex flex-col items-center text-center space-y-2">
+            <Logo src={homeLogo} name={homeTeam} tone="bg-gradient-primary" />
+            <span className="text-white font-semibold text-sm leading-tight">{homeTeam}</span>
           </div>
 
-          {/* VS */}
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-600">VS</div>
+          <div className="flex flex-col items-center">
+            <span className="font-display text-xs font-bold tracking-widest text-dark-400">VS</span>
+            <span className="mt-1 w-px h-8 bg-gradient-to-b from-white/20 to-transparent" />
           </div>
 
-          {/* Equipo Visitante */}
-          <div className="text-center">
-            <div className="flex flex-col items-center space-y-2">
-              {awayLogo ? (
-                <img src={awayLogo} alt={awayTeam} className="w-12 h-12 object-contain" />
-              ) : (
-                <div className="w-12 h-12 bg-gradient-secondary rounded-full flex items-center justify-center text-xl font-bold">
-                  {awayTeam.charAt(0)}
-                </div>
-              )}
-              <span className="text-white font-medium text-sm">{awayTeam}</span>
-            </div>
+          <div className="flex flex-col items-center text-center space-y-2">
+            <Logo src={awayLogo} name={awayTeam} tone="bg-gradient-secondary" />
+            <span className="text-white font-semibold text-sm leading-tight">{awayTeam}</span>
           </div>
         </div>
+      </div>
 
-        {/* Cuotas */}
+      {/* Cuotas */}
+      <div className="px-4 pb-4">
         <div className={`grid ${drawOdds ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
-          {/* Cuota Local */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => handleBetClick(homeTeam, homeOdds)}
-            className={`p-3 rounded-lg border-2 transition-all ${
-              selectedBet === homeTeam
-                ? 'border-primary-500 bg-primary-500/20'
-                : 'border-dark-600 bg-dark-900/50 hover:border-primary-500 hover:bg-primary-500/10'
-            }`}
-          >
-            <div className="text-xs text-gray-400 mb-1">Local</div>
-            <div className="text-2xl font-bold text-primary-400">{homeOdds.toFixed(2)}</div>
-          </motion.button>
-
-          {/* Cuota Empate */}
-          {drawOdds && (
+          {oddsOptions.map((opt) => (
             <motion.button
-              whileHover={{ scale: 1.05 }}
+              key={opt.key}
+              whileHover={{ y: -2 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => handleBetClick('Empate', drawOdds)}
-              className={`p-3 rounded-lg border-2 transition-all ${
-                selectedBet === 'Empate'
-                  ? 'border-secondary-500 bg-secondary-500/20'
-                  : 'border-dark-600 bg-dark-900/50 hover:border-secondary-500 hover:bg-secondary-500/10'
+              onClick={() => handleBetClick(opt.key, opt.odds)}
+              aria-label={`Apostar a ${opt.key} con cuota ${opt.odds.toFixed(2)}`}
+              className={`relative rounded-xl border px-3 py-2.5 text-left overflow-hidden ${
+                selectedBet === opt.key
+                  ? 'border-yellow-400 bg-yellow-500/20'
+                  : 'border-white/10 bg-white/[0.04] hover:border-yellow-500/60 hover:bg-yellow-500/10'
               }`}
             >
-              <div className="text-xs text-gray-400 mb-1">Empate</div>
-              <div className="text-2xl font-bold text-secondary-400">{drawOdds.toFixed(2)}</div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-dark-300">
+                  <span className="text-dark-100 font-bold mr-1">{opt.label}</span>
+                  {opt.sub}
+                </span>
+                <FiPlus className="w-3.5 h-3.5 text-dark-400 group-hover:text-yellow-400" />
+              </div>
+              <div className="font-display text-2xl font-extrabold text-yellow-400 mt-0.5">
+                {opt.odds.toFixed(2)}
+              </div>
             </motion.button>
-          )}
-
-          {/* Cuota Visitante */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => handleBetClick(awayTeam, awayOdds)}
-            className={`p-3 rounded-lg border-2 transition-all ${
-              selectedBet === awayTeam
-                ? 'border-primary-500 bg-primary-500/20'
-                : 'border-dark-600 bg-dark-900/50 hover:border-primary-500 hover:bg-primary-500/10'
-            }`}
-          >
-            <div className="text-xs text-gray-400 mb-1">Visitante</div>
-            <div className="text-2xl font-bold text-primary-400">{awayOdds.toFixed(2)}</div>
-          </motion.button>
+          ))}
         </div>
 
-        {/* Más mercados */}
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          className="w-full py-2 text-sm text-primary-400 hover:text-primary-300 font-medium transition-colors"
-        >
+        <button className="w-full mt-3 py-2 text-xs font-semibold text-dark-300 hover:text-yellow-400 border-t border-white/5 pt-3">
           + Ver más mercados
-        </motion.button>
+        </button>
       </div>
     </motion.div>
   );

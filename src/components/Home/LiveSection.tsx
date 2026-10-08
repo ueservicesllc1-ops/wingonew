@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { FiArrowRight } from 'react-icons/fi';
 import MatchCard from '@/components/Betting/MatchCard';
 
 /**
@@ -54,38 +55,34 @@ const LiveSection = () => {
   ];
 
   return (
-    <section className="py-16 bg-gradient-to-b from-dark-900 to-dark-950">
-      <div className="container mx-auto px-4">
+    <section className="py-12">
+      <div className="px-4">
         {/* Título de la sección */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="flex items-center justify-between mb-8"
+          className="flex items-center justify-between mb-6"
         >
           <div className="flex items-center space-x-3">
-            <motion.div
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              className="w-3 h-3 bg-green-500 rounded-full"
-            />
-            <h2 className="text-3xl md:text-4xl font-bold text-white">
-              Eventos <span className="text-gradient">en Vivo</span>
+            <span className="badge-live">
+              <span className="live-dot" /> Live
+            </span>
+            <h2 className="section-title text-2xl md:text-3xl text-white">
+              Eventos <span className="text-gradient">en vivo</span>
             </h2>
           </div>
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            className="text-primary-400 hover:text-primary-300 font-medium flex items-center space-x-2"
+            whileHover={{ x: 4 }}
+            className="text-sm font-semibold text-yellow-400 hover:text-yellow-300 flex items-center space-x-1.5"
           >
             <span>Ver todos</span>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            <FiArrowRight className="w-4 h-4" />
           </motion.button>
         </motion.div>
 
         {/* Grid de partidos */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
           {liveMatches.map((match, index) => (
             <MatchCard key={match.id} {...match} index={index} />
           ))}

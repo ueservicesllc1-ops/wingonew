@@ -22,11 +22,6 @@ import {
 import { GiBoxingGlove, GiCycling, GiDart, GiPingPongBat } from 'react-icons/gi';
 import { FiChevronDown, FiX } from 'react-icons/fi';
 
-/**
- * Sidebar izquierda con listado completo de deportes
- * Simula datos que vendrían de una API
- */
-
 interface Sport {
   id: string;
   name: string;
@@ -42,14 +37,13 @@ interface Sport {
 interface SidebarSportsProps {
   isOpen?: boolean;
   onClose?: () => void;
-  alwaysShowDesktop?: boolean; // Nueva prop para mostrar siempre en desktop
+  alwaysShowDesktop?: boolean;
 }
 
 const SidebarSports = ({ isOpen = false, onClose, alwaysShowDesktop = false }: SidebarSportsProps) => {
   const [expandedSport, setExpandedSport] = useState<string | null>(null);
   const location = useLocation();
 
-  // Simulación de datos de deportes (como si vinieran de una API)
   const deportes: Sport[] = [
     {
       id: 'futbol',
@@ -220,240 +214,175 @@ const SidebarSports = ({ isOpen = false, onClose, alwaysShowDesktop = false }: S
     setExpandedSport(expandedSport === sportId ? null : sportId);
   };
 
+  const totalLive = deportes.reduce((sum, d) => sum + d.liveEvents, 0);
+  const totalAll = deportes.reduce((sum, d) => sum + d.totalEvents, 0);
+
   return (
     <>
-      {/* Sidebar Desktop - Siempre visible si alwaysShowDesktop es true */}
+      {/* Sidebar Desktop */}
       {(alwaysShowDesktop || isOpen) && (
-        <motion.aside
-          initial={{ x: -300 }}
-          animate={{ x: 0 }}
-          className="hidden lg:flex flex-col h-full bg-dark-800 border-r border-dark-700"
-        >
-        {/* Header de la sidebar */}
-        <div className="p-4 border-b border-dark-700 bg-dark-900">
-          <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            <span>Deportes</span>
-          </h2>
-          <p className="text-xs text-gray-400 mt-1">
-            {deportes.reduce((sum, d) => sum + d.liveEvents, 0)} eventos en vivo
-          </p>
-        </div>
+        <div className="flex flex-col h-full bg-dark-900/90 backdrop-blur-md">
+          {/* Header */}
+          <div className="p-4 border-b border-white/5 bg-white/[0.02]">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-base font-bold text-white flex items-center space-x-2">
+                <span className="live-dot" />
+                <span>Deportes</span>
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full bg-yellow-500/15 text-yellow-400 text-xs font-bold">
+                {totalLive} en vivo
+              </span>
+            </div>
+          </div>
 
-        {/* Lista de deportes scrolleable */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
-          {deportes.map((deporte, index) => (
-            <motion.div
-              key={deporte.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.02 }}
-            >
-              {/* Deporte principal */}
-              <div
-                className={`group rounded-lg overflow-hidden ${
-                  location.pathname.includes(deporte.id) ? 'bg-primary-500/10 border-primary-500' : ''
-                }`}
-              >
-                <Link
-                  to={`/sports/${deporte.id}`}
-                  className="flex items-center justify-between p-3 hover:bg-dark-700 transition-all"
-                  onClick={(e) => {
-                    if (deporte.leagues && deporte.leagues.length > 0) {
-                      e.preventDefault();
-                      toggleSport(deporte.id);
-                    }
-                  }}
-                >
-                  <div className="flex items-center space-x-3 flex-1">
-                    <deporte.icon className={`w-5 h-5 ${
-                      deporte.liveEvents > 0 ? 'text-green-400' : 'text-gray-400'
-                    } group-hover:text-primary-400 transition-colors`} />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-white group-hover:text-primary-400 transition-colors">
-                        {deporte.name}
-                      </div>
-                      <div className="flex items-center space-x-2 text-xs text-gray-500">
-                        {deporte.liveEvents > 0 && (
-                          <span className="text-green-400 font-semibold">
-                            {deporte.liveEvents} en vivo
-                          </span>
-                        )}
-                        <span>• {deporte.totalEvents} total</span>
+          {/* Lista de deportes */}
+          <div className="flex-1 overflow-y-auto p-2 space-y-1 no-scrollbar">
+            {deportes.map((deporte) => {
+              const isSelected = location.pathname.includes(deporte.id);
+              const isExpanded = expandedSport === deporte.id;
+
+              return (
+                <div key={deporte.id} className="rounded-xl overflow-hidden transition-all">
+                  <Link
+                    to={`/sports/${deporte.id}`}
+                    onClick={(e) => {
+                      if (deporte.leagues && deporte.leagues.length > 0) {
+                        e.preventDefault();
+                        toggleSport(deporte.id);
+                      }
+                    }}
+                    className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all ${
+                      isSelected
+                        ? 'bg-yellow-500/15 text-yellow-400 font-semibold shadow-sm'
+                        : 'text-dark-100 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <span className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                        deporte.liveEvents > 0 ? 'bg-yellow-500/10 text-yellow-400' : 'bg-white/5 text-dark-300'
+                      }`}>
+                        <deporte.icon className="w-4 h-4" />
+                      </span>
+                      <div className="truncate">
+                        <div className="text-sm leading-tight">{deporte.name}</div>
+                        <div className="text-[11px] text-dark-400">
+                          {deporte.liveEvents > 0 ? (
+                            <span className="text-yellow-400 font-semibold">{deporte.liveEvents} en vivo</span>
+                          ) : (
+                            `${deporte.totalEvents} eventos`
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {deporte.leagues && deporte.leagues.length > 0 && (
-                    <motion.div
-                      animate={{ rotate: expandedSport === deporte.id ? 180 : 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <FiChevronDown className="w-4 h-4 text-gray-400" />
-                    </motion.div>
-                  )}
-                </Link>
+                    {deporte.leagues && deporte.leagues.length > 0 && (
+                      <motion.div
+                        animate={{ rotate: isExpanded ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="text-dark-400"
+                      >
+                        <FiChevronDown className="w-4 h-4" />
+                      </motion.div>
+                    )}
+                  </Link>
 
-                {/* Ligas expandibles */}
-                <AnimatePresence>
-                  {expandedSport === deporte.id && deporte.leagues && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden bg-dark-900/50"
-                    >
-                      {deporte.leagues.map((league) => (
-                        <Link
-                          key={league.name}
-                          to={`/sports/${deporte.id}/${league.name.toLowerCase().replace(/\s+/g, '-')}`}
-                          className="flex items-center justify-between px-3 py-2 pl-12 hover:bg-dark-700 transition-colors text-sm"
-                        >
-                          <span className="text-gray-300 hover:text-white transition-colors">
-                            {league.name}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {league.events}
-                          </span>
-                        </Link>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                  {/* Ligas expandibles */}
+                  <AnimatePresence>
+                    {isExpanded && deporte.leagues && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden bg-black/20 rounded-lg my-1 space-y-0.5 p-1"
+                      >
+                        {deporte.leagues.map((league) => (
+                          <Link
+                            key={league.name}
+                            to={`/sports/${deporte.id}/${league.name.toLowerCase().replace(/\s+/g, '-')}`}
+                            className="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/5 text-xs text-dark-200 hover:text-white"
+                          >
+                            <span>{league.name}</span>
+                            <span className="text-[10px] text-dark-400 font-mono">{league.events}</span>
+                          </Link>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
 
-        {/* Footer de la sidebar */}
-        <div className="p-4 border-t border-dark-700 bg-dark-900">
-          <div className="text-xs text-gray-500 text-center">
-            <p>Total de eventos disponibles</p>
-            <p className="text-2xl font-bold text-primary-400 mt-1">
-              {deportes.reduce((sum, d) => sum + d.totalEvents, 0).toLocaleString()}
-            </p>
+          {/* Footer */}
+          <div className="p-3 border-t border-white/5 bg-white/[0.02] text-center">
+            <span className="text-[11px] text-dark-400">
+              Total disponible: <strong className="text-white font-mono">{totalAll.toLocaleString()}</strong> eventos
+            </span>
           </div>
         </div>
-        </motion.aside>
       )}
 
-      {/* Sidebar Móvil (Modal) */}
+      {/* Sidebar Móvil */}
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={onClose}
-              className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+              className="lg:hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
             />
-
-            {/* Sidebar Modal */}
             <motion.div
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25 }}
-              className="lg:hidden fixed left-0 top-0 bottom-0 w-80 bg-dark-800 z-50 flex flex-col"
+              className="lg:hidden fixed left-0 top-0 bottom-0 w-80 bg-dark-950 border-r border-white/10 z-50 flex flex-col shadow-2xl"
             >
-              {/* Header del modal */}
-              <div className="p-4 border-b border-dark-700 bg-dark-900 flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    <span>Deportes</span>
-                  </h2>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {deportes.reduce((sum, d) => sum + d.liveEvents, 0)} eventos en vivo
-                  </p>
+              <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="live-dot" />
+                  <h2 className="font-display font-bold text-white text-lg">Deportes</h2>
                 </div>
                 <button
                   onClick={onClose}
-                  className="w-10 h-10 rounded-lg bg-dark-700 flex items-center justify-center hover:bg-dark-600 transition-colors"
+                  className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 text-white"
                 >
-                  <FiX className="w-6 h-6" />
+                  <FiX className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Lista de deportes */}
-              <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                {deportes.map((deporte, index) => (
-                  <motion.div
-                    key={deporte.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.02 }}
-                  >
-                    <div className="group rounded-lg overflow-hidden">
-                      <Link
-                        to={`/sports/${deporte.id}`}
-                        onClick={(e) => {
-                          if (deporte.leagues && deporte.leagues.length > 0) {
-                            e.preventDefault();
-                            toggleSport(deporte.id);
-                          } else {
-                            onClose?.();
-                          }
-                        }}
-                        className="flex items-center justify-between p-3 hover:bg-dark-700 transition-all"
-                      >
-                        <div className="flex items-center space-x-3 flex-1">
-                          <deporte.icon className={`w-5 h-5 ${
-                            deporte.liveEvents > 0 ? 'text-green-400' : 'text-gray-400'
-                          } group-hover:text-primary-400 transition-colors`} />
-                          <div className="flex-1">
-                            <div className="text-sm font-medium text-white group-hover:text-primary-400 transition-colors">
-                              {deporte.name}
-                            </div>
-                            <div className="flex items-center space-x-2 text-xs text-gray-500">
-                              {deporte.liveEvents > 0 && (
-                                <span className="text-green-400 font-semibold">
-                                  {deporte.liveEvents} en vivo
-                                </span>
-                              )}
-                              <span>• {deporte.totalEvents}</span>
-                            </div>
-                          </div>
+              <div className="flex-1 overflow-y-auto p-3 space-y-1">
+                {deportes.map((deporte) => (
+                  <div key={deporte.id}>
+                    <Link
+                      to={`/sports/${deporte.id}`}
+                      onClick={(e) => {
+                        if (deporte.leagues && deporte.leagues.length > 0) {
+                          e.preventDefault();
+                          toggleSport(deporte.id);
+                        } else {
+                          onClose?.();
+                        }
+                      }}
+                      className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 text-dark-100 hover:text-white"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <span className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-yellow-400">
+                          <deporte.icon className="w-4 h-4" />
+                        </span>
+                        <div>
+                          <div className="text-sm font-medium text-white">{deporte.name}</div>
+                          <div className="text-xs text-dark-400">{deporte.liveEvents} en vivo</div>
                         </div>
-
-                        {deporte.leagues && deporte.leagues.length > 0 && (
-                          <motion.div
-                            animate={{ rotate: expandedSport === deporte.id ? 180 : 0 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            <FiChevronDown className="w-4 h-4 text-gray-400" />
-                          </motion.div>
-                        )}
-                      </Link>
-
-                      {/* Ligas */}
-                      <AnimatePresence>
-                        {expandedSport === deporte.id && deporte.leagues && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden bg-dark-900/50"
-                          >
-                            {deporte.leagues.map((league) => (
-                              <Link
-                                key={league.name}
-                                to={`/sports/${deporte.id}/${league.name.toLowerCase().replace(/\s+/g, '-')}`}
-                                onClick={onClose}
-                                className="flex items-center justify-between px-3 py-2 pl-12 hover:bg-dark-700 transition-colors text-sm"
-                              >
-                                <span className="text-gray-300">{league.name}</span>
-                                <span className="text-xs text-gray-500">{league.events}</span>
-                              </Link>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </motion.div>
+                      </div>
+                      {deporte.leagues && deporte.leagues.length > 0 && (
+                        <FiChevronDown className="w-4 h-4 text-dark-400" />
+                      )}
+                    </Link>
+                  </div>
                 ))}
               </div>
             </motion.div>

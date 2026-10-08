@@ -1,18 +1,25 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiMenu, FiX, FiUser, FiSearch, FiChevronDown, FiSettings } from 'react-icons/fi';
+import { FiMenu, FiX, FiSearch, FiChevronDown, FiSettings, FiZap, FiGift, FiPlus } from 'react-icons/fi';
 import { IoFootballOutline, IoBasketballOutline, IoTennisballOutline } from 'react-icons/io5';
-import { MdSportsSoccer, MdSportsBaseball, MdSportsVolleyball } from 'react-icons/md';
+import { MdSportsBaseball, MdSportsVolleyball } from 'react-icons/md';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useModalStore } from '@/store/useModalStore';
 import LoginModal from '@/components/Auth/LoginModal';
 import RegisterModal from '@/components/Auth/RegisterModal';
 import UserSidebar from '@/components/User/UserSidebar';
 
+const TICKER_ITEMS = [
+  'Bono de bienvenida hasta $500 en tu primer depósito',
+  'Cashback semanal del 10%',
+  'Apuesta sin riesgo en tu primera jugada',
+  'Retiros procesados en menos de 24 horas',
+];
+
 /**
- * Header Moderno con animaciones y diseño profesional
- * Incluye: Logo, menú de navegación, menú de deportes, búsqueda y autenticación
+ * Header moderno: ticker de promociones, logo, navegación, búsqueda y autenticación.
+ * Altura total ≈ 116px (el layout usa pt-32).
  */
 const HeaderModern = () => {
   const { showLoginModal, showRegisterModal, openLoginModal, closeLoginModal, openRegisterModal, closeRegisterModal } = useModalStore();
@@ -20,14 +27,11 @@ const HeaderModern = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showUserSidebar, setShowUserSidebar] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  
+
   const { user } = useAuthStore();
 
-  // Detectar scroll para cambiar estilo del header
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -40,147 +44,153 @@ const HeaderModern = () => {
     { name: 'Volleyball', icon: MdSportsVolleyball, path: '/sports/volleyball' },
   ];
 
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `relative px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+      isActive ? 'text-white bg-white/10' : 'text-dark-200 hover:text-white hover:bg-white/5'
+    }`;
+
+  const initial = (user?.name || user?.displayName || 'U').charAt(0).toUpperCase();
+
   return (
     <>
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled 
-            ? 'bg-gradient-to-r from-yellow-600 to-yellow-700/95 backdrop-blur-lg shadow-lg shadow-black/20' 
-            : 'bg-gradient-to-r from-yellow-600 to-yellow-700'
-        }`}
+          isScrolled
+            ? 'bg-dark-950/85 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]'
+            : 'bg-dark-950/60 backdrop-blur-md'
+        } border-b border-white/5`}
       >
-        {/* Barra superior con promociones */}
-        <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black py-2 px-4 text-center text-sm font-medium">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            🎉 ¡Bono de Bienvenida! Registrate y obtén hasta <span className="text-red-600 font-bold">$500</span> en tu primer depósito
-          </motion.div>
+        {/* Ticker de promociones */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-primary-700/40 via-primary-600/30 to-secondary-600/30 border-b border-white/5">
+          <div className="marquee-track py-2 text-xs font-semibold text-white/90">
+            {[...TICKER_ITEMS, ...TICKER_ITEMS, ...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
+              <span key={i} className="flex items-center mx-8 whitespace-nowrap">
+                <FiZap className="w-3.5 h-3.5 mr-2 text-yellow-400" />
+                {item}
+              </span>
+            ))}
+          </div>
         </div>
 
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2 group">
-              <motion.div 
-                className="relative"
-                whileHover={{ scale: 1.05 }}
+            <Link to="/" className="flex items-center space-x-3 group" aria-label="Wingo Sports inicio">
+              <motion.div
+                whileHover={{ rotate: -6, scale: 1.06 }}
                 whileTap={{ scale: 0.95 }}
+                className="relative w-11 h-11 rounded-2xl bg-gradient-neon flex items-center justify-center shadow-neon"
               >
-                <div className="w-12 h-12 bg-black/40 border border-yellow-500/50 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-yellow-500/30 transition-all duration-300">
-                  <MdSportsSoccer className="w-7 h-7 text-yellow-300" />
-                </div>
+                <span className="font-display font-extrabold text-2xl text-dark-950 leading-none">W</span>
+                <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-secondary-500 ring-2 ring-dark-950" />
               </motion.div>
-                <div className="hidden md:block">
-                <h1 className="text-2xl font-bold text-yellow-300">WingoSports</h1>
-                <p className="text-xs text-yellow-200">Apuestas en Vivo</p>
+              <div className="hidden md:block leading-tight">
+                <h1 className="font-display text-2xl font-extrabold text-white tracking-tight">
+                  Wingo<span className="text-gradient">Sports</span>
+                </h1>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-dark-300">Apuestas en vivo</p>
               </div>
             </Link>
 
             {/* Navegación Desktop */}
-            <nav className="hidden lg:flex items-center space-x-1">
-              {/* Menú Deportes */}
+            <nav className="hidden lg:flex items-center space-x-1" aria-label="Principal">
               <div
                 className="relative"
                 onMouseEnter={() => setActiveDropdown('deportes')}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
-                <button className="px-4 py-2 rounded-lg hover:bg-yellow-500/20 flex items-center space-x-1 group">
-                  <span className="text-yellow-100 group-hover:text-yellow-300 transition-colors">Deportes</span>
-                  <FiChevronDown className="w-4 h-4 group-hover:text-yellow-300 transition-transform group-hover:rotate-180" />
+                <button className="px-4 py-2 rounded-xl text-sm font-semibold text-dark-200 hover:text-white hover:bg-white/5 flex items-center space-x-1.5">
+                  <span>Deportes</span>
+                  <FiChevronDown className={`w-4 h-4 transition-transform ${activeDropdown === 'deportes' ? 'rotate-180' : ''}`} />
                 </button>
 
                 <AnimatePresence>
                   {activeDropdown === 'deportes' && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute top-full left-0 mt-2 w-64 bg-black/90 border border-yellow-500/30 rounded-xl shadow-2xl overflow-hidden backdrop-blur-lg"
+                      initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                      className="absolute top-full left-0 pt-2 w-64"
                     >
-                      {deportes.map((deporte) => (
-                        <Link
-                          key={deporte.name}
-                          to={deporte.path}
-                          className="flex items-center space-x-3 px-4 py-3 hover:bg-yellow-500/20 transition-colors border-b border-yellow-500/10 last:border-0 text-yellow-100"
-                        >
-                          <deporte.icon className="w-5 h-5 text-yellow-300" />
-                          <span>{deporte.name}</span>
-                        </Link>
-                      ))}
+                      <div className="glass-effect rounded-2xl shadow-2xl p-2">
+                        {deportes.map((deporte) => (
+                          <Link
+                            key={deporte.name}
+                            to={deporte.path}
+                            className="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-dark-100 hover:text-white group"
+                          >
+                            <span className="w-9 h-9 rounded-lg bg-white/5 group-hover:bg-yellow-500/15 flex items-center justify-center">
+                              <deporte.icon className="w-5 h-5 text-yellow-400" />
+                            </span>
+                            <span className="text-sm font-medium">{deporte.name}</span>
+                          </Link>
+                        ))}
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
 
-              <Link to="/" className="px-4 py-2 rounded-lg hover:bg-yellow-500/20 text-yellow-100 hover:text-yellow-300 transition-colors">
-                En Vivo
-              </Link>
-              <Link to="/promotions" className="px-4 py-2 rounded-lg hover:bg-yellow-500/20 text-yellow-100 hover:text-yellow-300 transition-colors">
-                Promociones
-              </Link>
-              <Link to="/casino" className="px-4 py-2 rounded-lg hover:bg-yellow-500/20 text-yellow-100 hover:text-yellow-300 transition-colors">
-                Casino
-              </Link>
+              <NavLink to="/" end className={navLinkClass}>
+                <span className="flex items-center space-x-2">
+                  <span className="live-dot" />
+                  <span>En Vivo</span>
+                </span>
+              </NavLink>
+              <NavLink to="/promotions" className={navLinkClass}>Promociones</NavLink>
+              <NavLink to="/casino" className={navLinkClass}>Casino</NavLink>
             </nav>
 
-            {/* Búsqueda */}
-            <div className="hidden md:flex items-center space-x-4">
+            {/* Búsqueda + cuenta */}
+            <div className="hidden md:flex items-center space-x-3">
               <div className="relative group">
+                <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-300 group-focus-within:text-yellow-400 transition-colors" />
                 <input
                   type="text"
                   placeholder="Buscar evento..."
-                  className="w-64 bg-black/30 border border-yellow-500/30 rounded-lg px-4 py-2 pl-10 text-sm text-yellow-100 placeholder-yellow-300/60 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 transition-all"
+                  aria-label="Buscar evento"
+                  className="w-52 xl:w-64 bg-white/5 border border-white/10 rounded-full px-4 py-2.5 pl-10 text-sm text-white placeholder-dark-300 focus:outline-none focus:border-yellow-500/60 focus:bg-white/10 focus:ring-4 focus:ring-yellow-500/10 transition-all"
                 />
-                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-yellow-300 group-hover:text-yellow-200 transition-colors" />
               </div>
 
-              {/* Botón de Admin - Siempre visible */}
               <Link
                 to="/admin"
-                className="w-10 h-10 bg-black/40 border border-yellow-500/50 rounded-full flex items-center justify-center hover:bg-yellow-500/20 hover:border-yellow-400 transition-all group"
+                className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/25 group"
                 title="Panel de Administración"
+                aria-label="Panel de Administración"
               >
-                <FiSettings className="w-5 h-5 text-yellow-300 group-hover:text-yellow-200 group-hover:rotate-90 transition-all duration-300" />
+                <FiSettings className="w-[18px] h-[18px] text-dark-200 group-hover:text-white group-hover:rotate-90 transition-all duration-300" />
               </Link>
 
-              {/* Botones de Auth */}
               {user ? (
-                <div className="flex items-center space-x-3">
-                  <button
-                    onClick={() => setShowUserSidebar(true)}
-                    className="flex items-center space-x-3 hover:bg-yellow-500/20 rounded-lg p-2 transition-colors"
-                  >
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-yellow-100">{user.name || user.displayName}</p>
-                      <p className="text-xs text-yellow-300 font-bold">${user.balance.toFixed(2)}</p>
-                    </div>
-                    <div className="w-10 h-10 bg-black/40 border border-yellow-500/50 rounded-full flex items-center justify-center">
-                      <FiUser className="w-5 h-5 text-yellow-300" />
-                    </div>
-                  </button>
-                </div>
+                <button
+                  onClick={() => setShowUserSidebar(true)}
+                  className="flex items-center space-x-3 pl-1.5 pr-4 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-yellow-500/50 hover:bg-white/10"
+                >
+                  <span className="w-9 h-9 rounded-full bg-gradient-neon flex items-center justify-center font-display font-bold text-dark-950">
+                    {initial}
+                  </span>
+                  <span className="text-left leading-tight">
+                    <span className="block text-xs text-dark-300 max-w-[110px] truncate">{user.name || user.displayName}</span>
+                    <span className="block text-sm font-bold text-yellow-400">${user.balance.toFixed(2)}</span>
+                  </span>
+                  <FiPlus className="w-4 h-4 text-yellow-400" />
+                </button>
               ) : (
-                <div className="flex items-center space-x-3">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={openLoginModal}
-                    className="px-4 py-2 rounded-lg border border-yellow-400 text-yellow-300 hover:bg-yellow-500/10 transition-all"
-                  >
+                <div className="flex items-center space-x-2">
+                  <button onClick={openLoginModal} className="btn-ghost px-5 py-2.5 text-sm">
                     Iniciar Sesión
-                  </motion.button>
+                  </button>
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={openRegisterModal}
-                    className="px-4 py-2 rounded-lg bg-black/40 border border-yellow-500 text-yellow-300 hover:bg-yellow-500/20 transition-all font-medium"
+                    className="btn-neon px-5 py-2.5 text-sm flex items-center space-x-2"
                   >
-                    Registrarse
+                    <FiGift className="w-4 h-4" />
+                    <span>Registrarse</span>
                   </motion.button>
                 </div>
               )}
@@ -189,9 +199,10 @@ const HeaderModern = () => {
             {/* Botón menú móvil */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden w-10 h-10 rounded-lg bg-black/30 border border-yellow-500/50 flex items-center justify-center hover:bg-yellow-500/20 transition-colors"
+              className="lg:hidden md:ml-3 w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10"
+              aria-label="Abrir menú"
             >
-              {isMenuOpen ? <FiX className="w-6 h-6 text-yellow-300" /> : <FiMenu className="w-6 h-6 text-yellow-300" />}
+              {isMenuOpen ? <FiX className="w-6 h-6 text-white" /> : <FiMenu className="w-6 h-6 text-white" />}
             </button>
           </div>
         </div>
@@ -203,38 +214,45 @@ const HeaderModern = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden bg-yellow-700 border-t border-yellow-600"
+              className="lg:hidden bg-dark-950/95 backdrop-blur-xl border-t border-white/5 overflow-hidden"
             >
-              <div className="container mx-auto px-4 py-4 space-y-2">
-                <Link to="/" className="block px-4 py-3 rounded-lg hover:bg-yellow-500/20 transition-colors text-yellow-100">
-                  En Vivo
+              <div className="container mx-auto px-4 py-4 space-y-1">
+                <Link to="/" onClick={() => setIsMenuOpen(false)} className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-white/5 text-white font-semibold">
+                  <span className="live-dot" />
+                  <span>En Vivo</span>
                 </Link>
                 {deportes.map((deporte) => (
                   <Link
                     key={deporte.name}
                     to={deporte.path}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-yellow-500/20 transition-colors text-yellow-100"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-white/5 text-dark-100"
                   >
-                    <deporte.icon className="w-5 h-5 text-yellow-300" />
+                    <deporte.icon className="w-5 h-5 text-yellow-400" />
                     <span>{deporte.name}</span>
                   </Link>
                 ))}
-                <Link to="/promotions" className="block px-4 py-3 rounded-lg hover:bg-yellow-500/20 transition-colors text-yellow-100">
+                <Link to="/promotions" onClick={() => setIsMenuOpen(false)} className="block px-4 py-3 rounded-xl hover:bg-white/5 text-dark-100">
                   Promociones
                 </Link>
-                
-                {!user && (
-                  <div className="flex flex-col space-y-2 pt-4 border-t border-yellow-600">
-                    <button
-                      onClick={openLoginModal}
-                      className="px-4 py-3 rounded-lg border border-yellow-400 text-yellow-300 hover:bg-yellow-500/10 transition-all text-center"
-                    >
+                <Link to="/casino" onClick={() => setIsMenuOpen(false)} className="block px-4 py-3 rounded-xl hover:bg-white/5 text-dark-100">
+                  Casino
+                </Link>
+
+                {user ? (
+                  <button
+                    onClick={() => { setShowUserSidebar(true); setIsMenuOpen(false); }}
+                    className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/5 border border-white/10 mt-3"
+                  >
+                    <span className="text-white font-semibold">{user.name || user.displayName}</span>
+                    <span className="text-yellow-400 font-bold">${user.balance.toFixed(2)}</span>
+                  </button>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2 pt-4 mt-2 border-t border-white/5">
+                    <button onClick={openLoginModal} className="btn-ghost py-3 text-sm">
                       Iniciar Sesión
                     </button>
-                    <button
-                      onClick={openRegisterModal}
-                      className="px-4 py-3 rounded-lg bg-black/40 border border-yellow-500 text-yellow-300 hover:bg-yellow-500/20 transition-all font-medium text-center"
-                    >
+                    <button onClick={openRegisterModal} className="btn-neon py-3 text-sm">
                       Registrarse
                     </button>
                   </div>

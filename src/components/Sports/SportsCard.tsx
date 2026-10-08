@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { IconType } from 'react-icons';
 import { Link } from 'react-router-dom';
+import { FiArrowRight } from 'react-icons/fi';
 
 interface SportsCardProps {
   name: string;
@@ -18,58 +19,39 @@ const SportsCard = ({ name, icon: Icon, path, liveMatches, color, index }: Sport
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
-      whileHover={{ scale: 1.05, y: -5 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.07 }}
+      whileHover={{ y: -6 }}
       className="relative"
     >
-      <Link to={path} className="block">
-        <div className="relative overflow-hidden rounded-xl bg-dark-800 border border-dark-700 hover:border-primary-500 transition-all duration-300 group">
-          {/* Fondo con gradiente */}
-          <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-          
-          {/* Efecto de brillo */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+      <Link to={path} className="block" aria-label={`Apostar en ${name}`}>
+        <div className="relative overflow-hidden surface-card hover:border-white/25 group h-full">
+          {/* Resplandor de color */}
+          <div className={`absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gradient-to-br ${color} opacity-20 group-hover:opacity-50 blur-2xl transition-opacity duration-500`} />
+          {/* Icono gigante de fondo */}
+          <Icon className="absolute -bottom-6 -right-4 w-36 h-36 text-white/[0.04] group-hover:text-white/[0.09] group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500" />
 
-          <div className="relative p-6 space-y-4">
-            {/* Icono */}
-            <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg group-hover:shadow-glow transition-all duration-300`}>
-              <Icon className="w-8 h-8 text-white" />
-            </div>
-
-            {/* Información */}
-            <div>
-              <h3 className="text-xl font-bold text-white mb-1">{name}</h3>
-              <p className="text-sm text-gray-400">
-                <span className="inline-flex items-center space-x-1">
-                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  <span>{liveMatches} en vivo</span>
+          <div className="relative p-6 flex flex-col h-full">
+            <div className="flex items-start justify-between mb-8">
+              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}>
+                <Icon className="w-7 h-7 text-white" />
+              </div>
+              {liveMatches > 0 && (
+                <span className="badge-live">
+                  <span className="live-dot" /> {liveMatches}
                 </span>
-              </p>
+              )}
             </div>
 
-            {/* Botón */}
-            <motion.div
-              whileHover={{ x: 5 }}
-              className="flex items-center text-primary-400 font-medium"
-            >
-              Ver apuestas
-              <svg className="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </motion.div>
-          </div>
+            <h3 className="font-display text-xl font-bold text-white mb-1">{name}</h3>
+            <p className="text-sm text-dark-300 mb-5">{liveMatches} eventos en vivo</p>
 
-          {/* Badge de eventos en vivo */}
-          {liveMatches > 0 && (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="absolute top-4 right-4 px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow-glow"
-            >
-              LIVE
-            </motion.div>
-          )}
+            <div className="mt-auto flex items-center text-sm font-semibold text-yellow-400 group-hover:text-yellow-300">
+              <span>Ver apuestas</span>
+              <FiArrowRight className="w-4 h-4 ml-1.5 group-hover:translate-x-1.5 transition-transform" />
+            </div>
+          </div>
         </div>
       </Link>
     </motion.div>

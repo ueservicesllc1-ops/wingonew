@@ -9,6 +9,9 @@ export interface Banner {
   active: boolean;
   order: number;
   createdAt?: any;
+  title?: string;
+  subtitle?: string;
+  cta?: string;
 }
 
 /**
